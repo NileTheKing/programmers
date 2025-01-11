@@ -1,0 +1,23 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+class Solution {
+    public int solution(int[] nums) {
+        
+        int size = nums.length;
+        int half = size / 2;
+        HashMap<Integer, Integer> map = new HashMap<>(); //폰켓몬 종류와 갯수
+        
+        //map에 등록
+        for (int num : nums) {
+            map.put(num, map.getOrDefault(num, 0) + 1); //있으면 추가(+1) 없으면 등록1
+        }
+        
+        //최대한 다른 종류로 하고 부족하면 원래 뽑았던 거에서 더 뽑기  
+        //키가 half보다 같거나 크면 키 갯수가 답 ex)키가 4개 
+        //키가 half보다 작으면 ex)3개 half는 4개 -> 키 갯수.
+        Set<Integer> keys = map.keySet();
+        return Math.min(keys.size(), half);
+
+    }
+}
