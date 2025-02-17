@@ -3,34 +3,29 @@ class Solution {
     private String[] vowels = {"A", "E", "I", "O", "U"};
     public int solution(String word) {
         
-        for (String vowel : vowels) {
-            if(search(word, new StringBuilder(vowel))){
-                return cnt;
-            }
-        }
-        
-        return cnt;
+        return search(word, new StringBuilder()) - 1;
     }
-    public boolean search(String word, StringBuilder current) {
+    public int search(String word, StringBuilder current) {
         
         cnt++;
         
         if(current.toString().equals(word)) {
-            return true;
+            return cnt;
         }
         if (current.length() >= 5) {
-            return false;
+            return -1;
         }
         
         for (String vowel : vowels) {
             current.append(vowel);// current: AAAA, vowel:A, E, I, O, U
-            if(search(word, current)) {
-                return true;
+            int result = search(word, current);
+            if (result != -1) {
+                return result;
             }
             current.setLength(current.length() - 1);
         }
         
-        return false;
+        return -1;
     }
 
 }
