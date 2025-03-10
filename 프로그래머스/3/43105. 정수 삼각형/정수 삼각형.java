@@ -2,36 +2,28 @@ import java.util.*;
 class Solution {
     public int solution(int[][] triangle) {
         
-        int[][] dp = new int[triangle.length][];
-        //dp 가변배열 선언
-        for (int i = 0; i < dp.length; i++) {
-            dp[i] = new int[i+1];
-        }
         
-        //dp 완성
-        dp[0][0] = triangle[0][0];
+        
+      
         //1열에 해당하는 부분부터 완성
         for (int i = 1; i < triangle.length; i++) {
-            for (int j = 0; j < dp[i].length;j++) {
+            for (int j = 0; j < triangle[i].length;j++) {
                 //첫번째면 경계쳐리
                 if (j == 0) {
-                    dp[i][j] = dp[i-1][j] + triangle[i][j];
+                    triangle[i][j] = triangle[i-1][j] + triangle[i][j];
                 }//마지막이면 또 경계처리
-                else if(j == dp[i].length - 1){
-                    dp[i][j] = dp[i - 1][j - 1] + triangle[i][j];
+                else if(j == triangle[i].length - 1){
+                    triangle[i][j] = triangle[i - 1][j - 1] + triangle[i][j];
                 }
                 else {
-                    dp[i][j] = Math.max(dp[i-1][j-1], dp[i-1][j]) + triangle[i][j];
+                    triangle[i][j] = Math.max(triangle[i-1][j-1], triangle[i-1][j]) + triangle[i][j];
                 }
             }
         }
         
-        int max = Integer.MIN_VALUE;
-        for (int i = 0; i < dp[dp.length - 1].length; i++) {
-            max = Math.max(max, dp[dp.length - 1][i]);
-        }
+
         
-        return max;
+        return Arrays.stream(triangle[triangle.length - 1]).max().getAsInt();
     }
 }
 /**
