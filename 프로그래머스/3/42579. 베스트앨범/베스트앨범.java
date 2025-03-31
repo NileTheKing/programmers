@@ -1,46 +1,60 @@
 import java.util.*;
 class Solution {
     public int[] solution(String[] genres, int[] plays) {
-        List<Integer> ans = new ArrayList<>();
-        HashMap<String, Integer> genrePlays = new HashMap<>();
-        HashMap<String, HashMap<Integer, Integer>> music = new HashMap<>();
-        //장르, <고유번호, 재생횟수>
+        List<Integer> answer = new ArrayList<>();
+        Map<String, Integer> playMap = new HashMap<>(); //장르명, 플레이수
+        Map<String, Map<Integer, Integer>> biggerMap = new HashMap<>();
+        //장르, 고유번호, 플레이수
         
-        //장르별로 재생횟수 구하기
-        for(int i = 0; i < genres.length; i++) {
-            genrePlays.put(genres[i], genrePlays.getOrDefault(genres[i], 0) + plays[i]);
+        //플레이리스트 
+        for (int i = 0; i < genres.length; i++) {
+            playMap.put(genres[i], playMap.getOrDefault(genres[i],0) + plays[i]);
         }
         
-        //장르별로 노래들 추가하기. 장르를 키로 노래를 정리
+        //<장르, <고유번호, 재생목록>> 
         for (int i = 0; i < genres.length; i++) {
-            music.computeIfAbsent(genres[i], k -> new HashMap<>())
+            biggerMap.computeIfAbsent(genres[i], v -> new HashMap<>())
                 .put(i, plays[i]);
         }
         
-        //장르정렬
-        List<String> keys = new ArrayList(genrePlays.keySet());
-        Collections.sort(keys, (s1, s2) -> genrePlays.get(s2) - genrePlays.get(s1));//내림차순
+        //장르별 플레이리스트 별로 정렬
+        List<String> genresKeys = new ArrayList(playMap.keySet());
+        Collections.sort(genresKeys, (s1, s2) -> playMap.get(s2) - playMap.get(s1));//내림차순
         
-        //앨범 속 장르 내에서 재생횟수별로 수록. 안된다면 고유번호가 낮은순으로 수록.[]
-        for (String key : keys) {
-            HashMap<Integer, Integer> map = music.get(key);//장르에 접근해서 장르의 노래들목록(해시구조. 키-밸류)를 얻음
-            List<Integer> genreKey = new ArrayList(map.keySet());//장르안의 노래의 고유번호목록을 뽑아옴
+        //정렬된 키별로 biggerMaps를 순회하면서 담아야함
+        for (String genreKey : genresKeys) {
+            Map<Integer, Integer> genreSongs = biggerMap.get(genreKey);//특정장르의 모든 노래들. <고유번호, 재생횟수>
+            List<Integer> sortedSongsByPlay = new ArrayList(genreSongs.keySet());//장르의 고유번호들
             
-            Collections.sort(genreKey, (s1, s2) -> map.get(s2) != map.get(s1) ? map.get(s2) - map.get(s1) : Integer.compare(s1, s2));
+            Collections.sort(sortedSongsByPlay, (s1, s2) -> 
+                             genreSongs.get(s1) != genreSongs.get(s2) ? 
+                             genreSongs.get(s2) - genreSongs.get(s1) :
+                             Integer.compare(s1, s2));
             
-            ans.add(genreKey.get(0));
-            if (genreKey.size() > 1) {
-                ans.add(genreKey.get(1));
+            //이제 장르별안에서 재생목록, 고유번호로 정렬된거를 순회하면서 담기
+            answer.add(sortedSongsByPlay.get(0));
+            if (sortedSongsByPlay.size() >= 2) {
+                answer.add(sortedSongsByPlay.get(1));
             }
         }
         
-        return ans.stream().mapToInt(i->i).toArray();
+        
+        return answer.stream().mapToInt(i -> i).toArray();
+    
     }
 }
 /**
-장르1 30
-장르2 50
 
-앨범1 장르1(노래1, 노래2)
-앨범2 장르2(노래1, 노래2)
+노래0 클래식,500
+노래1 팝, 600
+노래2 클래식, 150
+노래3 클래식 800
+노래4 팝 2500
+
+클래식: 노래0, 노래2,노래3. 500+150+800 = 1450
+팝:노래1, 노래4. 600+2500 = 3100
+
+팝먼저 수록
+팝에서는 노래4 노래1으로 수록. 조회수 다르지만 같다? 고유번호 비교
+팝에서 2개, 클래식에서2개 -> [4,1,3,0]
 */
