@@ -1,47 +1,46 @@
 import java.util.*;
 class Solution {
     public int[] solution(String[] operations) {
-        int[] answer = new int[2];
-        PriorityQueue<Integer> apq = new PriorityQueue<>();//aescending.기본
-        PriorityQueue<Integer> dpq = new PriorityQueue<>(Collections.reverseOrder());//최대힙.
         
-        for (String cmd : operations) {
-            if (cmd.equals("D 1") && !apq.isEmpty()) {
-                int a = dpq.poll();
-                apq.remove(a);//dpq에서 최댓값뽑고 그거를 apq에서도 삭제
-                //System.out.println(a + " has been removed");
-                
-            }
-            else if (cmd.equals("D -1") && !apq.isEmpty()) {
-                int a = apq.poll();
-                dpq.remove(a);//dpq에서 최댓값뽑고 그거를 dpq에서도 삭제
-                //System.out.println(a + " has been removed");
-            }
-            else if (cmd.charAt(0) == 'I'){//큐에 주어진 숫자를 삽입
-                StringBuilder sb = new StringBuilder();
-                for (char c : cmd.toCharArray()) {//명령어에서 숫자만 가져오기
-                    if (Character.isDigit(c) || c == '-') {
-                        sb.append(c);
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+        PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+        
+        for (String operation : operations) {
+            char command = operation.charAt(0);
+            int operand = Integer.parseInt(operation.substring(2, operation.length()));
+            //System.out.println("opearnd = " + operand);
+            switch (command) {
+                case 'I': //I이면 삽입
+                    minHeap.offer(operand);
+                    maxHeap.offer(operand);
+                    break;
+                case 'D': //D이면 지우는건데 -1이냐 1이냐에 분기
+                    if (operand == -1 && !minHeap.isEmpty()) {
+                        int removed = minHeap.poll();
+                        maxHeap.remove(removed);
+                        break;
                     }
-                }
-                int num = Integer.parseInt(sb.toString());
-                //System.out.println(num + " has been put");
-                apq.offer(num);
-                dpq.offer(num);
+                    else if (operand == 1 && !maxHeap.isEmpty()){
+                        int removed = maxHeap.poll();
+                        minHeap.remove(removed);
+                        break;
+                    }
             }
         }
         
-        // 큐가 비어있으면 [0,0] 비어있지 않으면 [최댓값, 최솟값]을 return 하도록 solution 함수를 구현해주세요.
-        if (apq.isEmpty()) {
-            return new int[] {0, 0};
-        } else {
-            int min = apq.poll();//최솟값 뽑기
-            int max = dpq.poll();
-            answer[0] = max;
-            answer[1] = min;//최댓값 뽑기
-            return answer;
-        }
-    
-        
+        return minHeap.isEmpty() ? new int[] {0, 0} : new int[] {maxHeap.poll(), minHeap.poll()};
     }
 }
+/**
+우선순위 큐가 두개 필요할 것 같음.
+
+operations순회하며 연산을 처리하고
+    최대힙 최소힙 만들고
+    
+    최소힙  16
+    최대힙 5643
+    
+    -45 -642 45 
+
+리턴
+*/
