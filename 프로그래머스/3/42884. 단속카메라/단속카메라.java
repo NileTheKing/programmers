@@ -1,28 +1,29 @@
 import java.util.*;
 class Solution {
     public int solution(int[][] routes) {
-
-        //routes를 끝난 점 기준으로 정렬
-        Arrays.sort(routes, (a, b) -> Integer.compare(a[1], b[1]));
         
-        int cameraPos = routes[0][1];
-        int cnt = 1;
-        for (int i = 1; i < routes.length; i++) {
-            if (routes[i][0] <= cameraPos) {
+        int cnt = 0;
+        
+        Arrays.sort(routes, (a, b) -> a[1]-  b[1]);
+        boolean[] visited = new boolean[routes.length];
+        for (int i = 0; i < routes.length; i++) {
+            if (visited[i]) continue;
+            
+            visited[i] = true;
+            for (int j = i + 1; j < routes.length; j++) {
+                if (routes[i][1] >= routes[j][0]) {
+                    visited[j] = true;
+                }
             }
-            else {
-                cnt++;
-                cameraPos = routes[i][1];
-            }
+            cnt++;
         }
         return cnt;
     }
 }
 /**
-진입시점, 나간 시점
-이거를 수직선 상에 표시하면 풍선 뚫기 그 문제 생각나는데 리트코드. intervals
-최소한의 총알로 다 터뜨리는 그 문제. 
-정렬해가지고 하면 될듯?
-정렬기준은.. 일단 생각해보고 풀이를 봐보자.
-정렬해서
+일단 생각해보면
+끝지점에 추가하는 것이 이득이지 하나의 자동차를 위해 카메라를 하나는 설치해야 하는데(왜냐하면 앞에 하면 뒤에 오는 애들의 기회가 없음)
+그렇다면 끝지점 정렬하고 범위 포함되는ㅇ ㅐ들 있으면 그거만큼 이득
+
+
 */
