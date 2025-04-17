@@ -1,73 +1,61 @@
 class Solution {
     public int solution(String arr[]) {
+        int n = arr.length / 2 + 1; //피연산자 갯수
+        int[][] min = new int[n][n]; //min[i][j] 라면 i부터j 까지 연산한 것 중 최소값
+        int[][] max = new int[n][n];
         
-        int n = arr.length / 2 + 1; //피연산자 개수
-        int[][] mindp = new int[n][n];
-        int[][] maxdp = new int[n][n];
-        
+        //초기화
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                mindp[i][j] = Integer.MAX_VALUE;
-                maxdp[i][j] = Integer.MIN_VALUE;
+                min[i][j] = Integer.MAX_VALUE;
+                max[i][j] = Integer.MIN_VALUE;
             }
         }
-        
         for (int i = 0; i < n; i++) {
-            maxdp[i][i] = Integer.parseInt(arr[i * 2]);
-            mindp[i][i] = Integer.parseInt(arr[i * 2]);
+            min[i][i] = Integer.parseInt(arr[i * 2]);
+            max[i][i] = Integer.parseInt(arr[i * 2]);
         }
         
-        //step:i와 j의 간격
+        //순회하며 각 상태에서의 memoization 완성
+        //step을 우선 고려. i와 j사이의 간격. 연산해야하니까 1이상 step - n이하
         for (int step = 1; step < n; step++) {
-            for (int i = 0; i < n - step; i++) {//i부터 j까지의 연산 수행
-                int j = i + step;
-                //k는 i부터 j까지 돌면서 연산자별로 dp저장
-                for (int k = i; k < j; k++) {
-                    if (arr[k * 2 + 1].equals("+")){
-                        maxdp[i][j] = Math.max(maxdp[i][j], maxdp[i][k] + maxdp[k+1][j]);
-                        mindp[i][j] = Math.min(mindp[i][j], mindp[i][k] + mindp[k+1][j]);
-                        
-                    }else {
-                        maxdp[i][j] = Math.max(maxdp[i][j], maxdp[i][k] - mindp[k+1][j]);
-                        mindp[i][j] = Math.min(mindp[i][j], mindp[i][k] - maxdp[k+1][j]);
-                    
+            //i 차례
+            for (int i = 0; i < n - step; i++) {
+                int j = i + step; //j의 위치
+                
+                //이제 i와 j의 위치가 정해졌기 때문에 i와 j를 둘로 나누는 경우의 수를 루프로
+                for (int k = i; k < j; k++) { //i와 j의 번째(인덱스)
+                    String op = arr[k * 2 + 1];
+                    if (op.equals("+")) {
+                        //최대 + 최대랑 비교해서 계속 업데이트
+                        max[i][j] = Math.max(max[i][j], max[i][k] + max[k+1][j]);
+                        min[i][j] = Math.min(min[i][j], min[i][k] + min[k+1][j]);
+                        //최소 + 최소
+                    }else {// 음수연산. 얘가 최대이려면 최대 - 최소
+                        max[i][j] = Math.max(max[i][j], max[i][k] - min[k+1][j]);
+                        min[i][j] = Math.min(min[i][j], min[i][k] - max[k+1][j]);
                     }
                 }
             }
+            
         }
-        return maxdp[0][n-1];
+        return max[0][n-1];
+    
     }
 }
 /**
+연산자는 피연산자 2개를 요한다.
++연산자 앞뒤로는 최대값이 나와야 숫자가 커지고
+-연산자는 최대에서 최소를 뺴야 숫자가 커진다.
+그렇다면 자리별로 최대와 최소를 따로 추적한다
+추적하며 끝까지 순회하면 완성할 수 있다. 
 
-[1] - [2~5]
-[1~2] - [3~5]
-[1~3]
-생각 나는 방법: 그리디, 백트래킹, dp
-    그리디: 수학적으로 최선의 선택을 매번 할 수 있다면?
-        =>정렬을 이용해서 큰 값은 +에다가 붙이고 작은 값은 -에다가 붙이면??
-            => 아님. 순서는 그대로고 결합만 시켜서 최대
-    백트래킹: 모든 경우의 수 체크
-    
-    dp: 이전에 계산한 값을 사용
-    
-    
-    1 - 3  + 5 - 8
-    괄호는 2 * (4-1)인 6개가 되어야함.
-    
-    모르겠는디.... 흠 레벨4라.. . .. 3은 풀리니까 4건들여볼 수준일수도 이쏙
-    흠 30분만 고민해보자
-    
-    
-    풀이를 떠올리며 dp랑 엮어보자.
-    우선 그떄 그사람은 배열memo같은 거 두개 만들어서 갱신하면서 한듯?
-    
-    
-    테스트케이스 가지고 봐보자.,
-    핵심은 +를 만날떄랑 -를 만날떄 두 상황에 대해 최댓값을 추적을 해야함
-    +만날 떄 앞 뒤 놈 모두 최대여야함
-    -만날때는 앞에는 최대 뒤에는 최소가 나와야함.
-    이것을 이용해서 ..
-    maxDP
-    
+설계 고민: dp에 인덱스 어떻게 하나?
+일단 숫자만 넣은 배열을 하나 따로 만들고 그거 따로 순회? 그래도 되지 뭐 그렇게 하고싶다면야
+
+1 - 3 + 5 - 8이라면
+피연산자는 3개
+[][][]
+[][][]
+[][][]
 */
