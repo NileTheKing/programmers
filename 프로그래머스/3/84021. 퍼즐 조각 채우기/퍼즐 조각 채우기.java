@@ -1,191 +1,154 @@
 import java.util.*;
 class Solution {
-    
     public int solution(int[][] game_board, int[][] table) {
-        int rows = game_board.length;
-        int cols = game_board[0].length;
-        boolean[][] visitedTable = new boolean[rows][cols];
-        List<List<int[]>> shapes = new ArrayList<>();
-        List<List<int[]>> emptySpaces = new ArrayList<>();
+        int cnt = 0;
+        int r = table.length;
+        int c = table[0].length;
+        List<List<int[]>> shapes = new ArrayList<>();//table에서
+        List<List<int[]>> empty = new ArrayList<>();
         
-        // Find shapes from table
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (table[i][j] == 1 && !visitedTable[i][j]) {
-                    List<int[]> shape = bfs(table, visitedTable, new int[] {i, j}, 1);
-                    if (!shape.isEmpty()) {
-                        shapes.add(normalizeShape(shape));
-                    }
-                }
+        //bfs하면서 퍼즐 및 빈 공간찾기. 절대좌표 이용
+        boolean[][] table_visited = new boolean[r][c];
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                if (table_visited[i][j] || table[i][j] == 0) continue;
+                shapes.add(bfs(i,j, table_visited, table, 1));
+            }
+        }
+        boolean[][] board_visited = new boolean[r][c];
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                if (board_visited[i][j] || game_board[i][j] == 1) continue;
+                empty.add(bfs(i,j, board_visited, game_board, 0));
             }
         }
         
-        // Create a deep copy of game_board to avoid modifying the original
-        int[][] gameboardCopy = new int[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            gameboardCopy[i] = game_board[i].clone();
-        }
+        //모양을 순회하며 모양을 회전한것들과 game_board의 빈칸 hash에 있는지 확인. 있으면 모양만큼카운트하고 해당 모양세트 제거
         
-        boolean[][] visitedBoard = new boolean[rows][cols];
-        
-        // Find empty spaces from game_board
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (gameboardCopy[i][j] == 0 && !visitedBoard[i][j]) {
-                    List<int[]> space = bfs(gameboardCopy, visitedBoard, new int[] {i, j}, 0);
-                    if (!space.isEmpty()) {
-                        emptySpaces.add(normalizeShape(space));
-                    }
-                }
-            }
-        }
-        
-        // Match shapes with empty spaces
-        int answer = 0;
-        boolean[] used = new boolean[emptySpaces.size()];
-        
-        for (List<int[]> shape : shapes) {
+
+        for (int i=0; i<empty.size(); i++) {
+            List<int[]> hole = normalize(empty.get(i));
             boolean matched = false;
-            
-            // Try all possible rotations
-            List<List<int[]>> rotations = getAllRotations(shape);
-            
-            for (int i = 0; i < emptySpaces.size(); i++) {
-                if (used[i]) continue;
-                List<int[]> emptySpace = emptySpaces.get(i);
-                
-                // Skip if sizes don't match
-                if (shape.size() != emptySpace.size()) continue;
-                
-                // Try each rotation
-                for (List<int[]> rotatedShape : rotations) {
-                    if (isShapeEqual(rotatedShape, emptySpace)) {
+            for (int j=0; j<shapes.size(); j++) {
+                for (List<int[]> rotated : getFour(shapes.get(j))) {
+                    if (isSame(rotated, hole)) {
+                        cnt += hole.size();
+                        shapes.remove(j);
+                        empty.remove(i);   // ← 여기에 hole 제거 추가
+                        i--;               // 인덱스 보정
                         matched = true;
-                        used[i] = true;
-                        answer += shape.size();
                         break;
                     }
                 }
-                
                 if (matched) break;
             }
+
         }
-        
-        return answer;
+    return cnt;   
     }
     
-    // BFS to find connected blocks
-    public List<int[]> bfs(int[][] board, boolean[][] visited, int[] start, int target) {
-        int[][] directions = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
-        int rows = board.length, cols = board[0].length;
-        Queue<int[]> queue = new LinkedList<>();
-        List<int[]> shape = new ArrayList<>();
+    
+    public List<int[]> bfs(int r, int c, boolean[][] visited,
+                           int[][] table, int target) {
+        Queue<int[]> q = new LinkedList<>();
+        int[][] directions = {{-1,0}, {1,0}, {0, 1}, {0, -1}};
+        int rLim = table.length;
+        int lLim = table[0].length;
+        List<int[]> list = new ArrayList<>();
+        //System.out.println("bfs called");
         
-        if (board[start[0]][start[1]] != target) return shape;
-        
-        queue.offer(start);
-        visited[start[0]][start[1]] = true;
-        
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-            shape.add(new int[] {current[0], current[1]});
-            
-            for (int[] dir : directions) {
-                int nextR = current[0] + dir[0];
-                int nextC = current[1] + dir[1];
-                
-                if (nextR < 0 || nextR >= rows || nextC < 0 || nextC >= cols) continue;
-                if (visited[nextR][nextC] || board[nextR][nextC] != target) continue;
-                
-                visited[nextR][nextC] = true;
-                queue.offer(new int[] {nextR, nextC});
+        q.offer(new int[] {r, c});
+        visited[r][c] = true;
+        list.add(new int[] {0, 0});
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                int[] polled = q.poll();   
+                for (int[] direction : directions) {
+                    int newX = polled[0] + direction[0];
+                    int newY = polled[1] + direction[1];
+                    
+                    if (newX < 0 || newX >= rLim || newY < 0 || newY >= lLim) continue;
+                    if (visited[newX][newY]) continue;
+                    
+                    if (table[newX][newY] == target) {
+                        visited[newX][newY] = true;
+                        list.add(new int[] {newX - r, newY - c});
+                        q.offer(new int[] {newX, newY});
+                    }
+                    
+                }
             }
         }
         
-        return shape;
+        return normalize(list); //정렬
     }
-    
-    // Normalize shape coordinates relative to top-left corner
-    public List<int[]> normalizeShape(List<int[]> shape) {
-        // Find the top-left corner
-        int minRow = Integer.MAX_VALUE;
-        int minCol = Integer.MAX_VALUE;
-        
-        for (int[] point : shape) {
-            minRow = Math.min(minRow, point[0]);
-            minCol = Math.min(minCol, point[1]);
+    public List<List<int[]>> getFour(List<int[]> shape) {
+        List<List<int[]>> four = new ArrayList<>();
+        List<int[]> currentRotation = shape;
+        for (int i = 0; i < 4; i++) {
+            four.add(currentRotation);
+            currentRotation = rotate(currentRotation);
         }
         
-        // Normalize all points relative to top-left corner
+        return four;
+        
+    }
+    public List<int[]> normalize(List<int[]> input) {
         List<int[]> normalized = new ArrayList<>();
-        for (int[] point : shape) {
-            normalized.add(new int[] {point[0] - minRow, point[1] - minCol});
+        int minR = Integer.MAX_VALUE;
+        int minC = Integer.MAX_VALUE;
+        
+        for (int[] coord : input) {
+            minR = Math.min(coord[0], minR);
+            minC = Math.min(coord[1], minC);
         }
         
-        // Sort for consistent comparison
-        Collections.sort(normalized, (a, b) -> {
-            if (a[0] == b[0]) return Integer.compare(a[1], b[1]);
-            return Integer.compare(a[0], b[0]);
-        });
-        
+        for (int[] coord : input) {
+            normalized.add(new int[] {coord[0] - minR, coord[1] - minC});
+        }
+        normalized.sort((a,b) -> a[0]!=b[0]? a[0]-b[0] : a[1]-b[1]);
         return normalized;
     }
     
-    // Get all possible rotations of a shape (0°, 90°, 180°, 270°)
-    public List<List<int[]>> getAllRotations(List<int[]> shape) {
-        List<List<int[]>> rotations = new ArrayList<>();
-        List<int[]> currentRotation = shape;
-        
-        // Add all 4 rotations
-        for (int i = 0; i < 4; i++) {
-            rotations.add(currentRotation);
-            currentRotation = rotateClockwise(currentRotation);
+    public List<int[]> rotate(List<int[]> input) {
+        List<int[]> added = new ArrayList<>();
+        for (int[] coord : input) {
+            added.add(new int[] {coord[1], -coord[0]});
         }
         
-        return rotations;
+        return normalize(added);
     }
-    
-    // Rotate shape 90 degrees clockwise
-    public List<int[]> rotateClockwise(List<int[]> shape) {
-        List<int[]> rotated = new ArrayList<>();
+    public boolean isSame(List<int[]> shape, List<int[]> empty) {
         
-        // 90 degrees clockwise: (r, c) -> (c, -r)
-        for (int[] point : shape) {
-            rotated.add(new int[] {point[1], -point[0]});
-        }
+        int sizeS = shape.size();
+        int sizeE = empty.size();
         
-        return normalizeShape(rotated);
-    }
-    
-    // Check if two shapes are equal (same points)
-    public boolean isShapeEqual(List<int[]> shape1, List<int[]> shape2) {
-        if (shape1.size() != shape2.size()) return false;
+        if (sizeS != sizeE) return false;
         
-        for (int i = 0; i < shape1.size(); i++) {
-            if (!Arrays.equals(shape1.get(i), shape2.get(i))) {
+        for (int i = 0; i < sizeS; i++) {
+            if (shape.get(i)[0] != empty.get(i)[0] ||
+               shape.get(i)[1] != empty.get(i)[1]) {
                 return false;
             }
         }
         
         return true;
+        
     }
 }
 /**
-돌리는 함수 구현
-greedy? backtracking?
+-회전 가능
+-끼워 넣은 조각의 주변은 비어있을 수 없음
+    = 무조건 현재 모양의(회전 포함) 모양과 동일해야 삽입 가능
 
-필요없이 그냥 되는거 넣으면 됨 순서대로 확인해서. 뭐먼지 넣는지는 상관이 전혀 없다.
+Q: 넣을 수 있으면 무조건 넣는 게 맞나?
+A: yes
 
-이게 bfs랑 무슨 관련이 있을가요
-table에 있는 도형은 따로 알려주질 않아서 직접 인식시켜야함.
-table을 순회하며 bfs로 블럭 하나를 직접 인식해야함
-    순회하면서 visited확인해놓고 상하좌우 연결되어있으면 거기로 
-    bfs든 dfs든 해서 도형위치를 기억해놓는 기능이 필요
-    bfs로 가자.
-
-그리고 회전해서 모양을 변환시키는 기능이 필요
-좌표를 바탕으로 어떻게 상대적인 위치를 표현하나? 그것은 점하나를 기준으로 상대위치를 표시해야함
-그리고 회전기능으로 상대위치를 기억시켜야함.
-맨윗칸 맨좌측칸 기준으로 상대위치를 표시해서 담아두고 회전으로 상대위치를 바꾸는 로직을 구현해야함
-그렇담 table을 2중 for loop으로 iterate하면서 처음만난 점을 기억해두고 bfs로 하면서 상대위치를 다 구해놓으면 됨. 순서는 상관없고 그냥 기록하면 됨.
+로직
+    table 순회하면서 조각 정보를 담은 조각 정보를 담기 shapes(Set<List<Integer>> or List<List<Integer>>)
+    game_board를 순회하면서(left top corner)
+    회전로직을 돌리며 isFittable로 해당 칸에 넣을 수 있는지 확인
+        빈칸 목록을 따로 만들어놓고 shapes랑 회전하면서 넣을 수 있는지 확인
+    넣을 수 있다면 현재 순회중인 shape의 칸 갯수를 추가
 */
