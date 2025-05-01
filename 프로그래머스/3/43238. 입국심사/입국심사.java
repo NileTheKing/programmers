@@ -1,43 +1,40 @@
 import java.util.*;
 class Solution {
     public long solution(int n, int[] times) {
-        
         long answer = 0;
+        int length = times.length;
         Arrays.sort(times);
-        
-        long low = 1;
-        long high = (long)times[times.length - 1] * n;
-        
-        while (low <= high) {
-            long mid = low + (high - low) / 2; //중간 시간
-            long donePeople = 0;
-            
+        long left = 1; //1
+        long right = (long)times[length - 1] * n; // 60
+
+        while(left <= right) {
+            long done = 0;
+            long mid = left + (right - left) / 2;
             for (int time : times) {
-                donePeople += mid/time;
-                if (donePeople >= n) break;
+                done += mid / time; //mid는 시간. 각 심사관별로 몇명처리가능한지 계싼
             }
             
-            if (donePeople >= n) {
-                high = mid - 1;
+            //mid는 예상시간
+            //done은 총 걸린 시간을 mid로 예측했을 때 총 처리한 사람 수
+            //if(done == n) break;
+            if (done >= n) {//실제로 n명보다 더 처리할 수 있었다면 너무 시간을 널널하게줌
+                right = mid - 1;
                 answer = mid;
             }
-            else {
-                low = mid + 1;
+            else {//잘 수행 못헀으므로 시간을 더 줌
+                left = mid + 1;
             }
-            
-            
         }
+        
         return answer;
     }
 }
 /**
-만약 10,10이라면
-0분 4명남고
-10분 2명나목
-20분 0명남음
+구하는 최솟값: 모든 사람이 심사 받는데 걸리는 시간
 
-10 * (n / 창구수)
+우선 times 정렬해가지고 가장 짧은애랑 가장 긴 애로 해봄
+mid만들어서 
 
-low와 high(가장 오래걸리는 창구) 를 두고 평균값은 mid를 구해 mid시간으로 해결할 수 있는지 확인
-해결할 수 있는지 확인: mid동안 처리한 사람수를 카운트해서 gt n or lt n등 케이스별로 low/high 수정
+7과 10의 사이인 8.5라고 가정
+그러면 8.5 
 */
