@@ -1,60 +1,64 @@
 import java.util.*;
-
 class Solution {
     public int solution(int n, int[][] results) {
-        Map<Integer, List<Integer>> win = new HashMap<>();
-        Map<Integer, List<Integer>> defeat = new HashMap<>();
-        int cnt = 0;
+        int ans = 0; //결과값
+        HashMap<Integer, List<Integer>> win = new HashMap<>();
+        HashMap<Integer, List<Integer>> lose = new HashMap<>();
         
-        for (int[] result : results) {
-            int winner = result[0];
-            int loser = result[1];
-
-            win.computeIfAbsent(winner, k -> new ArrayList<>()).add(loser);
-            defeat.computeIfAbsent(loser, k -> new ArrayList<>()).add(winner);
+        //graph
+        for (int[] r : results) {
+            win.computeIfAbsent(r[0], k -> new ArrayList<>()).add(r[1]);
+            lose.computeIfAbsent(r[1], k -> new ArrayList<>()).add(r[0]);
         }
         
-        // 1번 선수부터 순회
+        //이긴거 카운트 + 진거 카운트
+        //매 선수별로 카운트 가능한가 확인
         for (int i = 1; i <= n; i++) {
-            boolean[] visited = new boolean[n + 1];
-            Queue<Integer> q = new LinkedList<>();
+            boolean[] wvisited = new boolean[n + 1];
+            boolean[] lvisited = new boolean[n + 1];
+            int lcount = dfs(lose, wvisited, i);
+            int wcount = dfs(win, lvisited, i);
             
-            // 이긴 선수들 탐색
-            q.offer(i);
-            visited[i] = true;
-            while (!q.isEmpty()) {
-                int winner = q.poll();
-                for (int loser : win.getOrDefault(winner, Collections.emptyList())) {
-                    if (!visited[loser]) {
-                        visited[loser] = true;
-                        q.offer(loser);
-                    }
-                }
-            }
             
-            // 진 선수들 탐색
-            q.offer(i);
-            while (!q.isEmpty()) {
-                int loser = q.poll();
-                for (int winner : defeat.getOrDefault(loser, Collections.emptyList())) {
-                    if (!visited[winner]) {
-                        visited[winner] = true;
-                        q.offer(winner);
-                    }
-                }
-            }
+            if (lcount + wcount == n - 1) ans++;
             
-            boolean flag = true;
-            for (int j = 1; j <= n; j++) {
-                if (!visited[j]) {
-                    flag = false;
-                    break;
-                }
-            }
-            
-            if (flag) cnt++;
+        }
+        
+        
+        return ans;
+    }
+    public int dfs(HashMap<Integer, List<Integer>> map, boolean[] visited, int current) {
+        //종료조건
+        int cnt = 0;
+        visited[current] = true;
+        
+        List<Integer> list = map.get(current);
+        if (list == null) return 0;
+        for (int op : list) {
+            if (!visited[op])
+                cnt += 1 + dfs(map, visited, op);
         }
         
         return cnt;
     }
 }
+
+/**
+이긴사람 기준으로 연결시키기
+    이긴 그래프
+    진 그래프 두개?
+    or
+    그래프를 방향성으로 승패로?
+    
+    ->방향성대로 하면 진놈을 얻어서 하니까 불편함 그래서 그냥 따로 ㄱ
+    
+    
+    4, <2,3>
+    3, <2>
+    1, <2>
+    2, <5>
+    
+    
+    2는 5한테 이기고. 1한테지고. 3한테짐.3은 4한테 지니까 4한테도 짐.
+    이긴거 카운트 + 진거 카운트해서 자기뺀 선수 수면 확정.
+*/
