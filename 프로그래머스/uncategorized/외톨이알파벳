@@ -1,0 +1,36 @@
+import java.util.*;
+class Solution {
+    public String solution(String input_string) {
+        PriorityQueue<Character> tori = new PriorityQueue<>();//외톨이
+        Set<Character> set = new HashSet<>();
+        char last = 'A';
+        
+        //pq에 추가. 그리고 set같이 쓰면서 답으로 변환
+        for (char c : input_string.toCharArray()) {
+            if (set.contains(c)) {
+                if (c == last) {
+                    last = c;
+                    continue;
+                }else {
+                    tori.offer(c); //답에 추그
+                    System.out.printf("adding %c \n", c);
+                }
+            }
+            set.add(c);
+            last = c;
+        }
+        
+        Set<Character> check = new HashSet<>();
+        StringBuilder ans = new StringBuilder();
+        while (!tori.isEmpty()) {
+            char c  = tori.poll();
+            if (!check.contains(c)) {
+                ans.append(c);
+            }
+            check.add(c);
+        }
+        
+        return ans.length() == 0 ? "N" : ans.toString();
+    
+    }
+}
