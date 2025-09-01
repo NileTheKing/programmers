@@ -1,0 +1,26 @@
+import java.util.*;
+class Solution {
+    int max = 0;
+    public int solution(int[][] ability) {
+        backtrack(ability, 0, 0, new boolean[ability.length]);
+        return max;
+    }
+    //idx? 암튼 visited는 이미 사용한 학생.
+    public void backtrack(int[][] ability, int idx, int currentSum, boolean[] visited) {
+        if (idx == ability[0].length) { //모든종목 끝
+            max = Math.max(max, currentSum);
+            return;
+        }
+        
+        for (int i = 0; i < ability.length; i++) {
+            if (visited[i]) continue; //이미 능력사용
+            else {
+                currentSum += ability[i][idx];
+                visited[i] = true;
+                backtrack(ability, idx + 1, currentSum, visited);
+                currentSum -= ability[i][idx];
+                visited[i] = false;
+                }
+        }
+    }
+}
