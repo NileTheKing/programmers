@@ -8,7 +8,6 @@ class Solution {
     public int search(String word, StringBuilder current) {
         
         cnt++;
-        
         if(current.toString().equals(word)) {
             return cnt;
         }
