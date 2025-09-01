@@ -1,0 +1,37 @@
+import java.util.*;
+class Solution {
+    public int solution(int[] menu, int[] order, int k) {
+        int[][] arr = new int[order.length][2]; // <[시작시간, 종료시간], [시작시간, 종료시간], [시작시간, 종료시간] ...>
+        int currentTime = 0;
+        for (int i = 0; i < order.length; i++) {
+            arr[i][0] = k * i;//order[i]의 시작시간
+            arr[i][1] = currentTime + menu[order[i]]; //menu에서 order 조리시간 확인 << 이게 문제임. 이전 종료시간
+            
+            //만약 조리 끝냈는데 주문 없으면 다음시간으로 가야함.
+            if (arr[i][1] < k * (i + 1)) {
+                currentTime = k * (i + 1);
+            }else {
+                currentTime += menu[order[i]];
+            }
+        }
+        //끝점 정렬.
+        //Arrays.sort(arr, (a1, a2) -> a1[0] - a2[0]);
+        
+        int max = 0;
+        for (int i = 0; i < arr.length; i++) {
+            int cnt = 1;
+            for (int j = i+1; j < arr.length; j++) {
+                if (arr[j][0] < arr[i][1]) {
+                    cnt++;
+                }
+            }
+            max = Math.max(max, cnt);
+        }
+        return max;
+    }
+}
+/**
+일단 작대기로 치환해서 정렬을 한다.
+int[]를 담야아함.
+그다음에 동시에 많이 있는거 찾으면됨
+*/
