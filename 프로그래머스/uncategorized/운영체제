@@ -1,0 +1,30 @@
+import java.util.*;
+class Solution {
+    public long[] solution(int[][] program) {
+        //program: 우선순위점수, 호출시각, 소요시간
+        long[] answer = new long[11];
+        Arrays.sort(program, (o1, o2) -> o1[1] - o2[1]);
+        int programIdx = 0;
+        long currentTime = 0;
+        //pq에는 [우선순위, 호출시각, 소요시간]
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> 
+                                                      o1[0] == o2[0] ? o1[1] - o2[1] : o1[0] - o2[0]);
+        int doneCnt = 0;
+        while (doneCnt < program.length) {
+            while (programIdx < program.length && program[programIdx][1] <= currentTime) {
+                pq.offer(program[programIdx++]);
+            }
+            
+            if (pq.isEmpty()) {
+                currentTime = program[programIdx][1];
+            }else {
+                int[] polled = pq.poll();
+                answer[polled[0]] += currentTime - polled[1];
+                currentTime += polled[2];
+                doneCnt++;
+            }
+        }
+        answer[0] = currentTime;
+        return answer;
+    }
+}
