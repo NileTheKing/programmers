@@ -1,0 +1,43 @@
+import java.util.*;
+class Solution {
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
+    int[][] jumps = {{-2,0},{2,0},{0,2},{0,-2}};
+    public int solution(int n, int m, int[][] hole) {
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[]{0, 0, 0, 1});
+        boolean[][][] visited = new boolean[m][n][2];
+        //x, y, time, jump
+        for (int[] h : hole) {
+            visited[h[1] - 1][h[0] - 1][0] = true;
+            visited[h[1] - 1][h[0] - 1][1] = true;
+        }
+        while(!q.isEmpty()) {
+            int[] polled = q.poll();
+            int r = polled[0];
+            int c = polled[1];
+            int time = polled[2];
+            int jumpLeft = polled[3];
+            if (r == m -1 && c == n - 1) return time;
+            //visited[r][c][jumpLeft] = true;
+            for (int[] d : directions) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n || visited[nr][nc][jumpLeft]) continue;
+                visited[nr][nc][jumpLeft] = true;
+                q.offer(new int[] {nr, nc, time + 1, jumpLeft});
+            }
+            if (jumpLeft == 0) continue;
+            for (int[] j : jumps) {
+                int nr = r + j[0];
+                int nc = c + j[1];
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n || visited[nr][nc][0]) continue;
+                visited[nr][nc][0] = true;
+                q.offer(new int[] {nr, nc, time + 1, 0});
+            }
+        }
+        
+            
+    
+        return -1;
+    }
+}
