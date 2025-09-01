@@ -1,0 +1,26 @@
+class Solution {
+    public String[] solution(int[][] queries) {
+        String[] answer = new String[queries.length];
+        
+        int idx = 0;
+        for (int[] q : queries) {
+            answer[idx++] = find(q[0], q[1]);
+        }
+        return answer;
+    }
+    public String find(int gen, int thchild) {
+        if (gen == 1) return "Rr";
+        
+        String parent = find(gen - 1, (thchild - 1)/ 4 + 1);
+        if (parent.equals("RR")) return "RR";
+        else if (parent.equals("rr")) return "rr";
+        
+        if (thchild % 4 == 0) {
+            return "rr";
+        }else if (thchild %4 == 1) {
+            return "RR";
+        }else {
+            return "Rr";
+        }
+    }
+}
