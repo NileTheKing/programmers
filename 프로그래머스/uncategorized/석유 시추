@@ -1,0 +1,69 @@
+import java.util.*;
+
+class Solution {
+    int m, n;
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
+
+    public int solution(int[][] land) {
+        m = land.length;
+        n = land[0].length;
+        
+        int oilId = 2;
+        Map<Integer, Integer> oilSize = new HashMap<>();
+        
+        // 1단계: 모든 석유 덩어리 식별 및 크기 계산 (BFS 사용)
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (land[i][j] == 1) {
+                    // 탐색 방법을 DFS에서 BFS로 변경
+                    int size = bfs(land, i, j, oilId);
+                    oilSize.put(oilId++, size);
+                }
+            }
+        }
+        
+        int max = 0;
+        
+        // 2단계: 각 '열'을 기준으로 석유량 합산 (이 부분은 완벽합니다)
+        for (int j = 0; j < n; j++) {
+            Set<Integer> oilIdsInColumn = new HashSet<>();
+            int columnTotal = 0;
+            for (int i = 0; i < m; i++) {
+                if (!oilIdsInColumn.contains(land[i][j]) && land[i][j] > 1) {
+                    columnTotal += oilSize.get(land[i][j]);
+                    oilIdsInColumn.add(land[i][j]);
+                }
+            }
+            
+            max = Math.max(max, columnTotal);
+        }
+        
+        return max;
+    }
+    
+    // 재귀 DFS를 반복문 BFS로 변경
+    public int bfs(int[][] land, int startR, int startC, int oilId) {
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[]{startR, startC});
+        land[startR][startC] = oilId; // 시작점 ID 부여 (방문 처리)
+        int size = 1;
+
+        while (!q.isEmpty()) {
+            int[] current = q.poll();
+            int r = current[0];
+            int c = current[1];
+
+            for (int[] d : directions) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n && land[nr][nc] == 1) {
+                    land[nr][nc] = oilId;
+                    q.offer(new int[]{nr, nc});
+                    size++;
+                }
+            }
+        }
+        return size;
+    }
+}
