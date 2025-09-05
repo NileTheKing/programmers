@@ -1,0 +1,55 @@
+import java.util.*;
+class Solution {
+    int rows, cols;
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
+    int[][] jumps = {{-2,0},{2,0},{0,2},{0,-2}};
+    public int solution(int n, int m, int[][] hole) {
+        Queue<int[]> q = new LinkedList<>();
+        //좌표, visited, 남은 점프횟수, 현재 횟수.
+        //visited는 점프한 경우 안했던 경우 둘다 관리
+        
+        //m,n 행렬로 바꾼다 0based
+        rows = m;
+        cols = n;
+        boolean[][][] visited = new boolean[m][n][2]; //0은 쓴상태 1은 안쓴상태
+        //함정은 두상태 모두 방문상태로
+        for (int[] h :hole) {
+            visited[h[1] - 1][h[0]-1][0] = true;
+            visited[h[1] - 1][h[0]-1][1] = true;
+            
+        }
+        q.offer(new int[] {0, 0, 1,0});
+        int ans = 0;
+        while (!q.isEmpty()) {
+            int[] polled = q.poll();
+            int r = polled[0];
+            int c = polled[1];
+            int jumpLeft = polled[2];
+            int time = polled[3];
+            if (r == m -1 && c == n -1) return time;
+            //점프 있는 경우
+            for (int[] d : directions) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                
+                if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc][jumpLeft]) continue;
+                visited[nr][nc][jumpLeft] = true;
+                q.offer(new int[] {nr, nc, jumpLeft, time + 1});
+            }
+            if (jumpLeft == 0) continue;
+            for (int[] j : jumps) {
+                int nr = r + j[0];
+                int nc = c + j[1];
+                
+                if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc][0]) continue;
+                visited[nr][nc][0] = true;
+                q.offer(new int[] {nr, nc, 0, time + 1});
+            }
+            //없는 경우
+            //만약 처음에 점프있으면 점프하는거임 ㅜㄴ차적으로.. 둘다 동시에 수행해야하나? 이것을 어떻게 처리하지
+            //흠 하나의 상태로 묶어서 큐에다가 해야하나..
+        }
+        return -1;
+        
+    }
+}
