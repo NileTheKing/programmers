@@ -1,0 +1,76 @@
+import java.util.*;
+class Solution {
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
+    int[][] directions_hop = {{-2,0},{2,0},{0,2},{0,-2}};
+    public int solution(int n, int m, int[][] hole) {
+        Queue<int[]> q = new LinkedList<>();//좌표 좌표 보관개수 카운트
+        boolean[][][] visited = new boolean[m][n][2]; //0은 점프한상태의 방문상태 1은 점프안한상태의 방문상태
+        Set<Hole> set = new HashSet<>();
+        for (int[] h : hole) {
+            set.add(new Hole(h[1]-1, h[0] -1));
+        }
+        //초기위치 0,0 도착위치 m-1,n-1
+        q.offer(new int[]{0,0,1,0});
+        while (!q.isEmpty()) {
+            int[] polled = q.poll();
+            int r = polled[0];
+            int c = polled[1];
+            int hop = polled[2]; //1소유 0없음
+            int cnt = polled[3];    
+            //System.out.printf("r c hop cnt: %d %d %d %d\n", r ,c, hop, cnt);
+            if (r == m - 1 && c == n - 1) return cnt;
+            //일단 점프있든말든 1씩이동하는거도 넣음
+            for (int[] d : directions) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n || set.contains(new Hole(nr,nc))) continue;
+                if (hop == 1 && visited[nr][nc][1]) continue;
+                if (hop == 0 && visited[nr][nc][0]) continue;
+                //다음상태 어떻게 넘겨줄지 고민중. 당연히 그대로지. 방문처리도 현재상태 그대로
+                visited[nr][nc][hop] = true;
+                q.offer(new int[]{nr, nc, hop, cnt + 1});
+            }
+            //그리고 점프있으면 2씩이동하는거도 확인
+            if (hop == 1) {
+                for (int[] d : directions_hop) {
+                    int nr = r + d[0];
+                    int nc = c + d[1];
+
+                    if (nr < 0 || nr >= m  || nc < 0 || nc >= n 
+                        || set.contains(new Hole(nr,nc))) continue;
+                    if (hop == 1 && visited[nr][nc][0]) continue;
+                    //다음상태 어떻게 넘겨줄지 고민중. 당연히 그대로지. 방문처리도 현재상태 그대로
+                    visited[nr][nc][0] = true;
+                    q.offer(new int[]{nr, nc, 0, cnt + 1});
+                }
+            }
+        }
+        return -1;
+    }
+    public class Hole {
+        int r;
+        int c;
+        
+        public Hole(int r, int c) {
+            this.r = r;
+            this.c = c;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Hole hole =  (Hole) o;
+            return r == hole.r && c == hole.c;
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(r,c);
+        }
+    }
+}
+/**
+방문철 ㅣ어떻게? 
+*/
