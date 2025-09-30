@@ -1,86 +1,101 @@
 import java.util.*;
 class Solution {
-
     public int solution(int[][] points, int[][] routes) {
-        int numOfRobots=  routes.length;
+        Info[] infos = new Info[routes.length]; //로봇의 대수만큼 관리
+        //초기값 넣기 1번 2번 3번 로봇..
+        for (int i = 0; i < routes.length; i++) {
+           infos[i] = new Info(points[routes[i][0]-1][0] - 1, points[routes[i][0]-1][1] - 1, 1, false); //초기위치,다음위치인덱스,도착여부
+        }
         int ans = 0;
-        
-        Status[] arr = new Status[numOfRobots];//로봇 갯수만큼 상태 관리
-        int idx = 0;//1번로봇 
-        for (int[] route : routes) {
-            Status info = new Status();
-            info.pos = points[route[0] - 1].clone();
-            info.routeIdx = 0;
-            info.route = route;
-            if (route.length > 1) {
-                info.destination = points[route[1] - 1].clone();
-                info.hasArrived = false;
-            } else {
-                info.destination = info.pos.clone(); // 경로가 하나뿐이면 시작과 동시에 도착
-                info.hasArrived = true;
-            }
-            arr[idx++] = info;
-        }
-
-        // 초기(0초) 위치에서 겹치는 경우 세기
-        Map<String, Integer> initMap = new HashMap<>();
-        for (Status info : arr) {
-            if (info.hasArrived) continue; // 이미 끝난 로봇은 제외
-            String strPos = info.pos[0] + "," + info.pos[1];
-            int prev = initMap.getOrDefault(strPos, 0);
-            if (prev == 1) ans++; // 같은 칸에 두 번째 로봇이 들어오는 순간만 +1
-            initMap.put(strPos, prev + 1);
-        }
-
         while (true) {
-            boolean anyActive = false;
-
-            // 이동 수행
-            for (Status info : arr) {
+            //다 도착했는지 확인
+            boolean arrived = true;
+            for (Info i : infos) {
+                if (!i.hasArrived) arrived = false;
+            }
+            if (arrived) return ans;
+            
+            //모든 로봇이 현재 충돌위치인지 확인하기
+                //각 좌표 모두 해시맵에 추가해서 2이상인거 카운트
+            Map<Coord, Integer> crash = new HashMap<>();
+            for (int i = 0; i < infos.length; i++) {
+                Info info = infos[i];
                 if (info.hasArrived) continue;
-
-                // 현재 목적지에 이미 서있다면 다음 목적지로 갱신 또는 완료 처리
-                if (Arrays.equals(info.pos, info.destination)) {
-                    info.routeIdx++; // 이제 routeIdx는 '현재 위치' 인덱스가 됨
-                    // 마지막 포인트에 도달했으면 완료 처리
-                    if (info.routeIdx >= info.route.length - 1) {
-                        info.hasArrived = true;
-                        continue;
-                    } else {
-                        // 다음 목적지는 routeIdx + 1 를 참조해야 함
-                        info.destination = points[ info.route[ info.routeIdx + 1 ] - 1 ].clone();
-                    }
-                }
-                
-                // 한 칸 이동 (r 먼저, 그 다음 c)
-                if (info.pos[0] != info.destination[0]) {
-                    info.pos[0] += Integer.compare(info.destination[0], info.pos[0]);
-                } else if (info.pos[1] != info.destination[1]) {
-                    info.pos[1] += Integer.compare(info.destination[1], info.pos[1]);
-                }
+                int currentR = info.r;
+                int currentC = info.c;
+                Coord coord = new  Coord(currentR, currentC);
+                crash.put(coord, crash.getOrDefault(coord, 0) + 1);
             }
-
-            // 이동 후, "다음 턴에도 남아있을(도착하지 않은) 로봇들" 만 카운트
-            Map<String, Integer> temp = new HashMap<>();
-            for (Status info : arr) {
-                if (info.hasArrived) continue; // 도착했으면 더 이상 카운트 대상 아님
-                anyActive = true;
-                String strPos = info.pos[0] + "," + info.pos[1];
-                int prev = temp.getOrDefault(strPos, 0);
-                if (prev == 1) ans++; // prev==1 인 순간에만 +1 (==2가 되는 순간)
-                temp.put(strPos, prev + 1);
+            int cnt = 0;
+            for (int val : crash.values()) {
+                if (val >= 2) cnt++;
             }
+            //충돌지점의 갯수 세서 더하a기
+            ans += cnt;
+            //모든 로봇 이동시키기
+                //계산
+            for (int i = 0; i < infos.length; i++) {
+                Info info = infos[i];
+                if (info.hasArrived) continue;
+                int[] next = points[routes[i][info.index]-1];
+                if (info.r == next[0]-1 && info.c == next[1]-1) {
+                    info.index++;
+                }
+                if (info.index == routes[i].length) info.hasArrived = true;
+            } 
+                //업데이트
+            for (int i = 0; i < infos.length; i++) {
+                Info info = infos[i];
+                if (info.hasArrived) continue;
+                //다음위치로 업데이트. 이미도착한거는 안봄
+                int[] next = points[routes[i][info.index]-1];
+                if (info.r != next[0]-1) info.r = next[0]-1 > info.r ? info.r + 1 : info.r - 1;
+                else if(info.c != next[1]-1) info.c = next[1]-1 > info.c ? info.c + 1 : info.c - 1;
+            }
+        }
 
-            // 모든 로봇이 완료되어 더 이상 움직이지 않는다면 종료
-            if (!anyActive) return ans;
-        }             
     }
-
-    public class Status {
-        int[] pos;
-        int routeIdx = 0; // 현재 route의 인덱스 (pos가 route[routeIdx]에 해당)
-        int[] route; // 경로 포인트 번호들
-        int[] destination; // 현재 목표 좌표 (points[...] 형태)
+    public class Info {
+        int r;
+        int c;
+        int index; //다음에 어디로 가야하는지
         boolean hasArrived;
+        
+        public Info(int r, int c,int index, boolean hasArrived) {
+            this.r = r;
+            this.c = c;
+            this.index = index;
+            this.hasArrived = hasArrived;
+        }
+    }
+    public class Coord {
+        int r;
+        int c;
+        
+        public Coord(int r, int c) {
+            this.r = r;
+            this.c = c;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Coord coord = (Coord) o;
+            return coord.r == r && coord.c == c;
+        }
+        @Override
+        public int hashCode() {
+            return Objects.hash(r, c);
+        }
     }
 }
+/**
+시뮬레이션을 돌린다
+4개의 정보가 들어있다
+각 정보에는 위치정보가 담겨있다(예를 들어 현재위치, 목표지점 그리고 도착여부. 방문상태는 필요없다 최단거리니까)
+
+1. 클래스를 정의한다 Info 클래스
+2. 시뮬레이션을 돌리면서 한칸씩움직인다.
+    -1. 매번 좌표를 비교해서 충돌위험이 있는지 확인한다.
+*/
