@@ -1,18 +1,17 @@
-
 class Solution {
     public int[] solution(int n, long left, long right) {
-        int[] ans = new int[(int)(right - left + 1)];
+        int size = (int)right - (int)left + 1;
+        int[] ans = new int[size];
         int idx = 0;
         for (long i = left; i <= right; i++) {
-            long row = i / n;
-            long col =  i % n;
-            ans[idx++] = (int)Math.max(row, col) + 1;
+            long row = i / n + 1;
+            long col = i % n + 1;
+            //System.out.printf("at i: %d, row:%d, col:%d\n", i, row, col);
+            
+            ans[idx] = row < col ? (int)col : (int)row;
+            idx++;
         }
+        
         return ans;
     }
 }
-/**
-엄청난 n을 봐라 무려 10,000,000이다.
-n^2  하면 10^14. 10^8이 1억.
-right - left < 10^5. (right - left) ^2  < 10^10.100000
-*/
