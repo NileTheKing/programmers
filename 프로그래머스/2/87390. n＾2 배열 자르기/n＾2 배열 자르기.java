@@ -4,8 +4,8 @@ class Solution {
         int[] ans = new int[size];
         int idx = 0;
         for (long i = left; i <= right; i++) {
-            long row = i / n + 1;
-            long col = i % n + 1;
+            int row = (int)(i / n) + 1;
+            int col = (int)(i % n) + 1;
             //System.out.printf("at i: %d, row:%d, col:%d\n", i, row, col);
             
             ans[idx] = row < col ? (int)col : (int)row;
