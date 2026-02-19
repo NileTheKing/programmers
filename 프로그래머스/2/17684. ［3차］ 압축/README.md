@@ -1,6 +1,6 @@
 # [level 2] [3차] 압축 - 17684 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/17684) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/17684?language=java) 
 
 ### 성능 요약
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2026년 02월 19일 17:15:05
+2026년 02월 19일 17:15:17
 
 ### 문제 설명
 
