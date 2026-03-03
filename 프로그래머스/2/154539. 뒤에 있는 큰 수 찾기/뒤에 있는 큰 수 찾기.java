@@ -1,19 +1,27 @@
 import java.util.*;
 class Solution {
     public int[] solution(int[] numbers) {
-        Stack<Integer> mono = new Stack<>(); //인덱스
         int[] ans = new int[numbers.length];
         Arrays.fill(ans, -1);
-        for (int i = 0; i < numbers.length; i++) {
-            int n = numbers[i];
-            while (!mono.isEmpty() && n > numbers[mono.peek()]) { //현재 보는 애가 처리해줄수ㅡ 있는애 순회
-                //답 적어주기
-                ans[mono.peek()] = n;
-                mono.pop();
+        Stack<Integer> mono = new Stack<>();//인덱스정보 담은 모노스택
+        mono.add(0);
+        int i= 1;
+        while (!mono.isEmpty() && i < numbers.length) {
+
+            while (!mono.isEmpty() && numbers[mono.peek()] <  numbers[i]) {
+                //System.out.printf("debug\n");
+                int poppedIdx = mono.pop();
+                ans[poppedIdx] = numbers[i];// 꺼낸거는 다 해결해주기
             }
-            //스택에넣기
             mono.push(i);
+            i++;
+            
         }
         return ans;
+        
     }
 }
+/**
+
+
+*/
