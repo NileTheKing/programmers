@@ -1,0 +1,93 @@
+class Solution {
+    public long[] solution(long[] numbers) {
+        long[] ans = new long[numbers.length];
+        
+        for (int i = 0; i < numbers.length; i++) {
+            if ((numbers[i] & 1)==0) {
+                //짝수
+                ans[i] = numbers[i] | 1;
+            }else {//홀수
+                String s = "0" + Long.toBinaryString(numbers[i]);
+                char[] chars = s.toCharArray();
+                
+                for (int j = chars.length-1; j >= 0; j--) {
+                    if (chars[j] == '0') {
+                        chars[j] = '1';
+                        chars[j+1] = '0';
+                        break;
+                    }
+                }
+                long result = 0;
+                long nary = 1;
+                //System.out.printf("for %d, \n", numbers[i]);
+                for (int j = chars.length - 1; j >= 0; j--) {
+                    //System.out.printf("%c*%d ", chars[j], nary);
+                    int num = chars[j] - '0';
+                    result += (nary * num);
+                    nary *= 2;
+                }
+                ans[i] = result;
+                
+            }
+        }
+        return ans;
+    }
+}
+/**
+1  0001
+2  0010
+3  0011
+4  0100
+5  0101
+6  0110
+7  0111
+8  1000 <<기준
+9  1001 1개
+10 1010 
+11 1011
+12 1100
+13 1101
+14 01110
+15 01111
+16 10000
+17 10001
+18 10010
+19 10011
+20 10100
+21 10101
+22 10110
+23 10111
+24 11000
+25 11001
+26 11010
+27 11011
+28 11100
+29 11101
+30 11110
+31 11111
+
+
+==
+f1 2
+f2 3
+f3 5
+f4 5
+f5 6
+f6 7
+f7 11
+f8 9
+f9 10
+f10 11
+f11 13
+f12 13
+f14 15
+f15 23
+f16 17
+1개 다른 애랑 2개 다른애 찾아가지고 작은애고르면 되나?각각은 비트연산 잘해가지고 찾고?
+근데 숫자범위가 10^15니까 무조건 비트연산긴한디.. 하나씩 늘려가며 비트연산은 아닌거같음 ..
+특이점은 거기네 2^n - 1부분. 나머지는 그냥 다 자기+1임
+2^n - 1인애들은..
+f(3) = 7 
+f(7) = 11
+f(15) = 23
+*/
