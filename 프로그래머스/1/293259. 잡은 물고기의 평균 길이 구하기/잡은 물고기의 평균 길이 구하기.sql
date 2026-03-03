@@ -1,6 +1,10 @@
 -- 코드를 작성해주세요
-select round(avg(l.length),2) as average_length
+select round(avg(length),2) as average_length
 from (
-    select ifnull(length, 10) as length
+    select 
+        case 
+            when length is null then 10
+            else length
+        end as length
     from fish_info
-) as l;
+) as t
