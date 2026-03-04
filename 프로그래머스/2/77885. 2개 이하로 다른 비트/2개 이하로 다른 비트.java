@@ -7,27 +7,14 @@ class Solution {
                 //짝수
                 ans[i] = numbers[i] | 1;
             }else {//홀수
-                String s = "0" + Long.toBinaryString(numbers[i]);
-                char[] chars = s.toCharArray();
-                
-                for (int j = chars.length-1; j >= 0; j--) {
-                    if (chars[j] == '0') {
-                        chars[j] = '1';
-                        chars[j+1] = '0';
-                        break;
-                    }
-                }
-                long result = 0;
                 long nary = 1;
-                //System.out.printf("for %d, \n", numbers[i]);
-                for (int j = chars.length - 1; j >= 0; j--) {
-                    //System.out.printf("%c*%d ", chars[j], nary);
-                    int num = chars[j] - '0';
-                    result += (nary * num);
+                long temp = numbers[i];
+                while (temp % 2 == 1) {
+                    temp /= 2;
                     nary *= 2;
                 }
-                ans[i] = result;
                 
+                ans[i] = numbers[i] + nary - (nary/2);
             }
         }
         return ans;
