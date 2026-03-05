@@ -1,5 +1,5 @@
 -- 코드를 입력하세요
-SELECT left(product_code,2) as category, count(product_id) as products
+SELECT substring(product_code,1, 2) as category, count(*) as products
 from product
-group by left(PRODUCT_CODE,2)
+group by substring(product_code,1,2)
 order by category asc;
