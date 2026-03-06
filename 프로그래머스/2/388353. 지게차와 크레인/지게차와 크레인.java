@@ -2,61 +2,83 @@ import java.util.*;
 class Solution {
     int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
     int m, n;
+    boolean[][] escape;
     public int solution(String[] storage, String[] requests) {
-        char[][] board = new char[storage.length][storage[0].length()];
-        m = board.length;
-        n = board[0].length;
-        
-        for (int i = 0; i < m; i++) {
-            board[i] = storage[i].toCharArray();
-        }
-        
-        int ans = 0;
-        for (String r : requests) {
-            int cnt = 0; //thistime
-            if (r.length() == 1) { //지게차
-                cnt += lifter(board, r.charAt(0));
-            }else { //크레인
-                for (int i = 0; i < m; i++) {//풀스캔
-                    for (int j = 0; j < n; j++) {
-                        if (r.charAt(0) == board[i][j]) {
-                            cnt++;
-                            board[i][j] = '.';
-                            
-                        }
-                    }
-                }
-            }
-            //System.out.printf("THIS TIME CNT : %d\n", cnt);
-            ans += cnt;
-        }
-        return m * n - ans;
-        
-    }
-    public int lifter(char[][] board, char c) {//지게차 로직실행...꺼낼 수 있는c를 찾아라!
-        List<int[]> toBeDeleted = new ArrayList<>();
-        //스캔하면서..c에해당하는 애들이 동시에 탈출가능한지 확인.
-        //되는애들은.. 나중에 한 거번에 처리
+        m = storage.length;
+        n = storage[0].length();
+        char[][] board = new char[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                if (board[i][j] != c)  continue; //찾ㅇ르놈아니니까 풀스캔대상에서 제외
-                if (escapable(board, i, j)) {
-                    toBeDeleted.add(new int[] {i,j});
-                }
+                board[i] = storage[i].toCharArray();
             }
         }
+        
+        escape = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j <  n; j++) {
+                if (i == 0 || j == 0 || i == m - 1 || j == n - 1) {
+                    escape[i][j] = true;
+                }
+            } 
+        }
+        // for (int i = 0; i < m; i++) {
+        //     for (int j = 0; j < n; j++) {
+        //         if (escape[i][j]) {
+        //             System.out.printf("T ");
+        //         }else System.out.printf("F ");
+        //     }
+        //     System.out.println();
+        // }
+        
+        
+        for (String r : requests) {
+            if (r.length() == 1) {
+                lifter(board, r.charAt(0));
+            }else {
+                crane(board, r.charAt(0));
+            }
+            // System.out.println();
+            // for (int i = 0; i < m; i++) {
+            //     for (int j = 0; j < n; j++) {
+            //         System.out.printf("%c ", board[i][j]);
+            //     }
+            // System.out.println();
+            // }
+            
+        }
         int cnt = 0;
-        for (int[] t : toBeDeleted) {
-            //System.out.printf("%c, at [%d,%d]\n", board[t[0]][t[1]],t[0],t[1]);
-            board[t[0]][t[1]] = '.';
-            cnt++;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] != '.') {
+                    cnt++;
+                }
+                    // System.out.printf("%c", board[i][j]);
+                // }else System.out.printf(" ");
+            }
+            System.out.println();
         }
         return cnt;
-        
-        
     }
-    public boolean escapable(char[][] board, int r, int c) {
-        if (r == 0 || r == m - 1 || c == 0 || c == n - 1) return true;
+    public void lifter(char[][] board, char c) {
+        //주변이 아무것도 없거나
+        //$에 둘러쌓인 애들은 제거
+        List<int[]> toRemove = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] != c) continue; //아니면 볼필요없다
+                //맞다면 조건 확인..주변에 탈출가능포지션있따면 or 가장자리라면
+                //탈출가능한지 호출
+                if (possible(board,i,j)) toRemove.add(new int[] {i,j});
+            }
+        }
+        for (int[] pos : toRemove) {
+        board[pos[0]][pos[1]] = '.';
+        // 3. 지워진 곳이 외부와 연결되어 있다면 escape도 업데이트 해주면 좋음
+        // (또는 다음 턴 시작 시 전체적으로 BFS 한 번 돌리는 게 가장 깔끔)
+    }
+    }
+    public boolean possible(char[][] board, int r, int c) {
+        
         
         Queue<int[]> q = new LinkedList<>();
         q.offer(new int[] {r,c});
@@ -64,26 +86,29 @@ class Solution {
         visited[r][c] = true;
         while (!q.isEmpty()) {
             int[] polled = q.poll();
-            for (int[] d : directions) { //현재 다음좌표가 탈출가능구역이라면 종료
+            for (int[] d : directions) {
                 int nr = polled[0] + d[0];
                 int nc = polled[1] + d[1];
                 
                 if (nr < 0 || nr >= m || nc < 0 || nc >= n) return true; //겸 예외처리
                 if (visited[nr][nc]) continue;
-                if (board[nr][nc] != '.') continue; //안막혀있으면 못감.
+                if (board[nr][nc] != '.') continue;
                 
                 visited[nr][nc] = true;
-                q.offer(new int[] {nr, nc});
-            }
+                q.offer(new int[] {nr,nc});
+            
+            }            
         }
         return false;
     }
+    public void crane(char[][] board, char c) {
+        for (int i = 0; i < m; i++) {
+            for (int j= 0; j < n; j++) {
+                if (board[i][j] == c) {
+                    board[i][j] = '.';
+                }
+            }
+        }
+        
+    }
 }
-/**
-requests를 순회하면서 명령을 수행
-1. 지게차
-    얘는 이제.. 순회하면서 그 순회에서! 그 상태에서! 인접면이 있는지 확인. 걔 4면중 하나가 비어있거나
-    걔 자체가 끝라인이거나.
-2. 크레인
-    얘는 ez 그냥 다 꺼내면 되잖아
-*/
