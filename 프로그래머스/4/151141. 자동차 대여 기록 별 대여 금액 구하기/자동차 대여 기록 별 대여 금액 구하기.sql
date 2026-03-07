@@ -1,18 +1,18 @@
-SELECT h.HISTORY_ID, 
-    -- 결과값은 문제 요구사항에 따라 ROUND 또는 FLOOR (보통 ROUND(x, 0)가 정석)
-    FLOOR(c.DAILY_FEE * (DATEDIFF(h.END_DATE, h.START_DATE) + 1) * (100 - IFNULL(p.DISCOUNT_RATE, 0)) / 100) AS FEE
-FROM CAR_RENTAL_COMPANY_RENTAL_HISTORY h
-JOIN CAR_RENTAL_COMPANY_CAR c ON h.CAR_ID = c.CAR_ID
--- 1. 일단 LEFT JOIN으로 모든 대여 기록을 다 살려놓는다.
-LEFT JOIN CAR_RENTAL_COMPANY_DISCOUNT_PLAN p ON c.CAR_TYPE = p.CAR_TYPE and
-p.duration_type = (
-        CASE 
-            WHEN DATEDIFF(h.END_DATE, h.START_DATE) + 1 >= 90 THEN '90일 이상'
-            WHEN DATEDIFF(h.END_DATE, h.START_DATE) + 1 >= 30 THEN '30일 이상'
-            WHEN DATEDIFF(h.END_DATE, h.START_DATE) + 1 >= 7 THEN '7일 이상'
-        END
-)
-WHERE c.CAR_TYPE = '트럭' 
-
-GROUP BY h.HISTORY_ID
-ORDER BY FEE DESC, h.HISTORY_ID DESC;
+-- 코드를 입력하세요
+SELECT h.history_id,
+   floor((datediff(h.end_date , h.start_date) + 1) * c.daily_fee *
+    (100-ifnull(p.discount_rate, 0)) / 100)
+   as fee
+from CAR_RENTAL_COMPANY_CAR c
+join CAR_RENTAL_COMPANY_RENTAL_HISTORY h on c.car_id = h.car_id
+left join CAR_RENTAL_COMPANY_DISCOUNT_PLAN p on c.car_type = p.car_type  and
+    p.duration_type = (
+        case
+            when datediff(h.end_date, h.start_date) + 1 >= 90 then '90일 이상'
+            when datediff(h.end_date, h.start_date) + 1 >= 30 then '30일 이상'
+            when datediff(h.end_date, h.start_date) + 1 >= 7 then '7일 이상'
+            else null
+        end
+    )
+where c.car_type = '트럭'
+order by fee desc, h.history_id desc;
