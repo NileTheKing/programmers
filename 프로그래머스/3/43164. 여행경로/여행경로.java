@@ -1,42 +1,42 @@
 import java.util.*;
 class Solution {
-    List<String> ans = new ArrayList<>();
+    Map<String, PriorityQueue<String>> map;
+    List<String> ans;
     public String[] solution(String[][] tickets) {
+        map = new HashMap<>();
         
-        Map<String, PriorityQueue<String>> map = new HashMap<>();
-        int ticketSize = tickets.length;
-        for (String[] ticket : tickets) {
-            map.computeIfAbsent(ticket[0], key -> new PriorityQueue<>())
-                .offer(ticket[1]);
+        ans = new ArrayList<>();
+        for (String[] t : tickets) {
+            map.computeIfAbsent(t[0], k -> new PriorityQueue<>())
+                .offer(t[1]);
+            //leftOver.add(t[0] + t[1]);
         }
-        
-        dfs(map, "ICN", ticketSize);
+        backtrack("ICN", new ArrayList<>(), tickets.length);
         
         return ans.toArray(new String[0]);
-        
     }
-    public boolean dfs(Map<String, PriorityQueue<String>> map, String current
-                      , int ticketSize) {
-        
-        ans.add(current);
-        if (ans.size() == ticketSize + 1) return true; //종료조건
-        
-        if (!map.containsKey(current) || map.get(current).isEmpty()) {
-            ans.remove(ans.size() - 1); // backtrack
+    public boolean backtrack(String current, List<String> path, int length) {
+        path.add(current);
+        if (path.size() == length + 1) { //티켓 다씀!성공.
+            ans = new ArrayList<>(path);
+            return true;
+        }
+        //path.add(current);
+        PriorityQueue<String> original = map.get(current);
+        if (original == null || original.isEmpty()) {
+            path.remove(path.size() - 1);
             return false;
         }
-
-        PriorityQueue<String> pq = new PriorityQueue<>(map.get(current));
-        
+        PriorityQueue<String> pq = new PriorityQueue<>(original);
         while (pq != null && !pq.isEmpty()) {
-            String next = pq.poll();
-            map.get(current).remove(next);
-            if (dfs(map, next, ticketSize)) return true;
-            map.get(current).offer(next);
+            String polled = pq.poll();
+            map.get(current).remove(polled);
+            if (backtrack(polled, path, length)) return true;
+            map.get(current).offer(polled);
+            //여기서 pq또 넣나..?또 넣으면 무한반복이고.. 안넣으면 복구가안되는ㄷ.
+            //아니 복구할필요가 없지 안되는거니까. 걔가 안되면 뒤에서 찾아줄겨.
         }
-        
-        ans.remove(ans.size() - 1);
+        path.remove(path.size() - 1);
         return false;
-        
     }
 }
