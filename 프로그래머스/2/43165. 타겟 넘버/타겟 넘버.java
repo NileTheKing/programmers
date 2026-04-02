@@ -1,22 +1,19 @@
 class Solution {
-    private int cnt = 0;
+    int cnt = 0;
     public int solution(int[] numbers, int target) {
-        dfs(0, 0, numbers, target);
+        backtrack(numbers, 0, target, 0);
         return cnt;
     }
-    
-    public void dfs(int level, int current, int[] numbers, int target) {
-        if (level == numbers.length) {
-            if (current == target) {
-                cnt++;
-            }
+    public void backtrack(int[] numbers, int idx, int target, int current) {
+        if (idx == numbers.length) {
+            if (current == target) cnt++;
             return;
         }
         
-        dfs(level + 1, current + numbers[level], numbers, target);
-        dfs(level + 1, current - numbers[level], numbers, target);
+        //더하기
+        backtrack(numbers, idx + 1, target, current + numbers[idx]);
+        //뺴기
+        backtrack(numbers, idx + 1, target, current - numbers[idx]);
+        
     }
 }
-/**
-dfs해서 백트래킹?식으로해서 끝까지 해서 카운팅
-*/
