@@ -1,51 +1,41 @@
 import java.util.*;
 class Solution {
+    int m, n;
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
     public int solution(int[][] maps) {
+        //시작좌표 0,0 목표좌표..끝인 m-1, n-1
+        m = maps.length;
+        n = maps[0].length;
+        boolean[][] visited = new boolean[m][n];
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[] {0,0});
+        visited[0][0] = true;
         
         int cnt = 0;
-        int row = maps.length;
-        int col = maps[0].length;
-        Queue<int[]> q = new LinkedList<>();
-        int[][] directions = {{-1,0}, {1,0}, {0,-1}, {0,1}}; //상하좌우
-        
-        q.add(new int[] {0, 0});//시작 0,0 끝(4,4) (5*5)
-        
         while (!q.isEmpty()) {
+            int size = q.size();
             cnt++;
-            int size = q.size(); //q에 있는 모든 좌표에 대해 근처 확인
             for (int i = 0; i < size; i++) {
-                int[] polled = q.poll();// 각좌표마다
-                for (int[] direction : directions) {//근처확인
-                    int currentRow = polled[0] + direction[0];
-                    int currentCol = polled[1] + direction[1];
+                int[] polled = q.poll();
+                //System.out.printf("at (%d, %d) \n", polled[0], polled[1]);
+                //cnt++;
+                for (int[] d : directions) {
+                    int nr = polled[0] + d[0];
+                    int nc = polled[1] + d[1];
                     
-                    //예외처리
-                    if (currentRow < 0 || currentRow >= row) {
-                        continue;
-                    }
-                    if (currentCol < 0 || currentCol >= col) {
-                        continue;
-                    }
+                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+                    if (maps[nr][nc] == 0) continue;
+                    if (visited[nr][nc]) continue;
+                    if (nr == m - 1 && nc == n - 1) return cnt + 1;
                     
-                    if (maps[currentRow][currentCol] == 0) {
-                        continue;
-                    }
-                    
-                    if (maps[currentRow][currentCol] == 1) {
-                        maps[currentRow][currentCol] = 0;
-                        q.offer(new int[] {currentRow, currentCol});
-                    }
-                    
-                    if (currentRow == row - 1 && currentCol == col -1) {
-                        return cnt + 1;
-                    }
-                    
+                    visited[nr][nc]  = true;
+                    //maps[nr][nc] = 0;
+                    q.offer(new int[] {nr, nc});
                 }
             }
         }
         return -1;
+        
+        
     }
 }
-/**
-bfs or dfs로 풀면 되는데 bfs가 더 빠름. 이유는 음...암튼 그럼
-*/
