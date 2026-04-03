@@ -1,65 +1,37 @@
 import java.util.*;
 class Solution {
     public int solution(int distance, int[] rocks, int n) {
-        
-        Arrays.sort(rocks);
-        int length = rocks.length;
-        int left = 1;
-        int right = distance;
+        int l = 0;
+        int r = distance;
         int ans = 0;
+        Arrays.sort(rocks);
         
-        while(left <= right) {
-            int mid = left + (right - left) / 2;
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            //바위간 거리가 m을 넘을 수 없다
+            
+            //실제로 검증... 2개지울수있는데 
             int cnt = 0;
-            int prev = 0;
-            //System.out.println("left, mid, right: " + left + " " + mid + " " + right);
-            for (int i = 0; i < length; i++) {
-                if (rocks[i] - prev >= mid) { //각 거리를 계산. 이것이 현재 가정중인 mid보다 더 작으면 안됨
-                    //바위 안지워도 됨.
-                    //System.out.println(rocks[i] - prev + ", " + mid);
-                    prev = rocks[i];
+            int start = 0;
+            int prev = 0;;
+            for(int rock : rocks) { //바위 사이 거리가m보다 작으면 안돼. 지워야해
+                if (rock - prev < m) {//m보다 작을수없어 m은최소거리임
+                    //rock은없어져야함
+                    cnt++;
+                }else { //얜 그대로있어야해
+                    prev = rock;
                 }
-                else {//만약 mid를 밀어내고 최솟값이 된다면 얘를 없애야함
-                    cnt++;//바위 지움
-                }
-                
-                // if (cnt > n) { //조기종료
-                //     break;
-                // }
             }
-            
-            //마지막 돌이랑 도착지점도 확인
-            if (distance - prev < mid) {
-                cnt++;
+            if (distance - prev < m) cnt++;
+            //System.out.printf("m = %d, cnt = %d\n", m, cnt);
+            if (cnt > n) { // 바위사이 거리중에 제일 작은게 m이려면 너무 많이 지워야함-> m 은 욕심이야
+                r = m - 1;
+            }else { //거리최소가 m으로 하려했는데 너무 널널해서 뭐 안지워도됨.
+                l = m + 1;
+                ans = m;
             }
-            
-            
-            if (cnt > n) {//n보다 더 많은 돌을 지워야 mid를 거리의 최소로 만들 수 있었으므로
-                //mid가 너무 크면 rocks[i] - prev < mid면 지우는데 mid가 너무 크면 계쏙지움
-                right = mid - 1;
-            }else {
-                ans = mid;
-                left = mid + 1;
-            }
-            
         }
         
         return ans;
     }
 }
-/**
-
-parametric search
-
-구하고자 하는 것: 거리의 최솟값.
-거리의 최솟값을 low high로 설정
-매번 반복
-조건에 위배되면 탈출
-low high 조정
-
-2 11 14 17 21
-
-2 11 14 25
-2 9 3 11
-
-*/
