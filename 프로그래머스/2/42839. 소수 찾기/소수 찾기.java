@@ -1,47 +1,38 @@
 import java.util.*;
 class Solution {
-    HashSet<Integer> set = new HashSet<>();
+    Set<Integer> visited;
     public int solution(String numbers) {
-        boolean[] visited = new boolean[numbers.length()];
-        backtrack(visited, 0, new ArrayList<>(), numbers);
-        return set.size();
+        visited = new HashSet<>();
+        backtrack(numbers, 0, new StringBuilder(), new boolean[numbers.length()]);
+        // for 
+        return visited.size();
     }
-    
-    public boolean isPrime(int num) {
-        if (num < 2) {
-            return false;
+    public void backtrack(String numbers, int idx, StringBuilder current, boolean[] used) {
+        
+            if (idx != 0 && isPrime(current)) {
+                visited.add(Integer.parseInt(current.toString()));
+                // System.out.printf("%d added\n", Integer.parseInt(current.toString()));
+            }
+        
+        
+        for (int i = 0; i < numbers.length(); i++) {
+            if (used[i]) continue; //이미 쓴 인덱스
+            current.append(numbers.charAt(i));
+            used[i] = true;
+            backtrack(numbers, i + 1, current,used);
+            current.deleteCharAt(current.length() - 1);
+            used[i] = false;
         }
+    }
+    public boolean isPrime(StringBuilder sb) {
+        int num = Integer.parseInt(sb.toString());
+        if (num == 1 || num == 0) return false;
         for (int i = 2; i * i <= num; i++) {
             if (num % i == 0) {
+                // System.out.printf("%d not prime\n", num);
                 return false;
             }
         }
         return true;
-    }
-    
-    //방문표시, 찾는 중인 길이, 현재 완성, 보기
-    public void backtrack(boolean[] visited, int depth, ArrayList<Integer> current, String numbers) {
-        
-        int num = 0;
-        for (Integer i : current) {
-            num = num * 10 + i.intValue();
-        }
-        if (isPrime(num)) {
-            set.add(num);   
-        }
-    
-        
-        for (int i = 0; i < numbers.length(); i++) {
-            if (!visited[i]){
-                visited[i] = true;
-                int newadd = numbers.charAt(i) - '0';
-                current.add(newadd);
-                backtrack(visited, depth + 1, current, numbers);
-                current.remove(current.size() - 1);
-                visited[i] = false;
-            }
-            
-        }
-        
     }
 }
