@@ -1,47 +1,69 @@
 import java.util.*;
 class Solution {
     public int solution(String begin, String target, String[] words) {
-        
         Queue<String> q = new LinkedList<>();
-        boolean[] visited = new boolean[words.length];
-        int cnt = 0;
-        
         q.offer(begin);
+        Map<String, List<String>> map = new HashMap<>();
+        for (String w : words) {
+            int cnt = 0;
+            for (int i = 0; i < w.length(); i++)  {
+                if (begin.charAt(i) !=  w.charAt(i)) cnt++;
+            }
+            if (cnt == 1) map.computeIfAbsent(begin, k -> new ArrayList<>()).add(w);
+        }
+        for (String w1 : words) {
+            for (String w2 : words) {
+                if (w1.equals(w2)) continue;
+                int cnt = 0;
+                // System.out.printf("===comparing %s %s===\n", w1,w2);
+                for (int i = 0; i < w1.length(); i++) {
+                    //int cnt = 0;
+                    if (w1.charAt(i) != w2.charAt(i)) {
+                        // System.out.printf("at %d, different.\n",i);
+                        cnt++;
+                    }
+                    // System.out.printf("diff %s and %s : %d\n", w1,w2,cnt);
+                    
+                }
+                if (cnt == 1) {
+                        map.computeIfAbsent(w1, k -> new ArrayList<>()).add(w2);
+                        // System.out.printf("!!%s has %s\n", w1, w2);
+                    }
+                // System.out.printf("===end of comparison===\n");
+            }
+        }
+        
+        Set<String> visited = new HashSet<>();
+        visited.add(begin);
+        int cnt = -1;
         while (!q.isEmpty()) {
+            //String polled = q.poll();
+            // cnt++;
+            //System.out.printf("%s\n", polled);
             cnt++;
             int size = q.size();
             for (int i = 0; i < size; i++) {
-                //가지고 있는 q에서 인접단어(바꿀 수 있는 단어를 다 넣음)
-                String current = q.poll();
-                if (current.equals(target)) {
-                    return cnt - 1;
-                }
-                for (int j = 0; j < words.length; j++) {
-                    //현재와 단어장에 있는 것을 비교해서 하나만 다른거만 넣음. 그리고 방문처리
-                    if (isOneDiff(current, words[j]) && !visited[j]) {
-                        q.offer(words[j]);
-                        visited[j] = true;
-                    }
+                String polled = q.poll();
+                if (map.get(polled) == null) continue;
+                for (String nei : map.get(polled)) {
+                    if (visited.contains(nei)) continue;
+                    if (nei.equals(target)) return cnt + 1;
+                    q.offer(nei);
+                    visited.add(nei);
                 }
             }
+            
         }
-
         return 0;
     }
-    boolean isOneDiff(String str1, String str2) {
-        
-        int cnt = 0;
-        for (int i = 0; i < str1.length(); i++) {
-            if (str1.charAt(i) != str2.charAt(i)) {
-                cnt++;
-            }
-        }
-        
-        return cnt  == 1;
-    }
+    
 }
-/**
-그냥 하나씩 봐야함(미로 찾기처럼)
-그니까 매 스텝마다 갈 수 있는 words골라서 bfs를 실행하면 최단거리를 구할 수 있다.
-
+/*
+완탐해야하지..
+지금 가지고 있는단어로...  words스캔하면서 변환가능하면 변환.이미 했던 단어로 할필요?없음.
+최소니까..
+될떄까지.
+bfs로 가능한가 이거?
+되지?
+각 단어별로 이웃을 만들어 그래프 그러고나서 순회..?
 */
