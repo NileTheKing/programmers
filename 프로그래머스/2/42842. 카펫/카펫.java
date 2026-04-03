@@ -1,48 +1,44 @@
+import java.util.*;
 class Solution {
     public int[] solution(int brown, int yellow) {
+        List<int[]> y = new ArrayList<>(); //가능한 y [가로,세로]
         
-        int added = brown + yellow;
-
+        //모든 가능성..
         for (int i = 1; i * i <= yellow; i++) {
-            int first = i;
-            int last = yellow / first;
-            if (yellow % first == 0) {
-                int totalSquared = (first + 2) * (last + 2);
-                if (totalSquared - yellow == brown) {
-                    return new int[] {last + 2, first + 2};
-                }
-            }
+            int h = i;
+            if (yellow % h != 0) continue;
+            y.add(new int[] {yellow / h,i});
+            //System.out.printf("%d, %d\n", yellow / h,i);
         }
-        return null;
-        
-        
+        //이제 되는 경우에 대해서  삥둘러서 갯수맞는지 확인.
+        for (int[] trial : y) {
+            //전체모양 시도해가지고.. 거기서 yellow빼면 brown인데 지금 brown이랑맞으면됨
+            int total = (trial[0] + 2) *  (trial[1] + 2);
+            if (total - yellow == brown) return new int[] {trial[0] + 2, trial[1] + 2};
+        }
+        return new int[0];
+    
     }
 }
-     
-        
-   
-
 /**
-ㅁㅁㅁㅁㅁㅁ
-ㅁㅁㅁㅁㅁㅁ
-ㅁㅁㅁㅁㅁㅁ
-ㅁㅁㅁㅁㅁㅁ
-가운데에 있는 게 그냥 한줄로 되어있거나
- 등등
-2면 가로2 세로1 (가로1 세로2는 안됨 규칙상)
-1이면 가로1 세로1
-24면 가로24 세로1/ 가로12 세로2 /가로8 세로3/ 가로6 세로4 요놈임. 왜?
-ㅁㅁㅁㅁㅁㅁㅁㅁ
-ㅁㅂㅂㅂㅂㅂㅂㅁ
-ㅁㅂㅂㅂㅂㅂㅂㅁ
-ㅁㅂㅂㅂㅂㅂㅂㅁ
-ㅁㅂㅂㅂㅂㅂㅂㅁ
-ㅁㅁㅁㅁㅁㅁㅁㅁ
-가로8 세로3이면
-최소 가로10 세로5여야함
-그렇다면 50 - 24하면 26임. 안됨
-가로6 세로4면
-최소 가로8 세로6여야함
-48 - 24 = 24니까 가능.
+테케1
+    yellow가 가운데. 직사각형이니까 ㅡ 아니면 ㅣ ㅣ는안됨. ㅡ임
+    그러면 ㅡ배치하고 삥두르면됨. 그러면 4*3
+테케2
+    yellow배치 그리고삥둘러.
+테케3
+    24니까
+    ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ 1* 24 -> brown불가능
+    or
+    ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ 2* 12 -> 
+    ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ
+    or
+    ㅁㅁㅁㅁㅁㅁㅁㅁ 3* 8
+    or
+    4*6 여기까지. ->가능
+    ㅁㅁㅁㅁㅁㅁ
+    ㅁㅁㅁㅁㅁㅁ
+    ㅁㅁㅁㅁㅁㅁ
+    ㅁㅁㅁㅁㅁㅁ
 
 */
