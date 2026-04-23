@@ -1,6 +1,6 @@
 # [level 2] 미로 탈출 - 159993 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/159993) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/159993?gad_source=1&gad_campaignid=23716289893&gbraid=0AAAAAC_c4nD56mfTbX1PTnpb3GRKEJRDF&gclid=CjwKCAjwhqfPBhBWEiwAZo196vWmuiNYrbXVHHnGvrHroBzzVPjSIaWY0a5W_PgSNpbu_sq6tXvzbBoC2d8QAvD_BwE) 
 
 ### 성능 요약
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2026년 04월 23일 18:16:04
+2026년 04월 23일 18:16:15
 
 ### 문제 설명
 
