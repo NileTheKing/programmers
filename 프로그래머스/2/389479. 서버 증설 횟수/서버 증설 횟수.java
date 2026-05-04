@@ -1,19 +1,22 @@
 import java.util.*;
 class Solution {
     public int solution(int[] players, int m, int k) {
-        PriorityQueue<Integer> pq = new PriorityQueue<>();//최소힙. 오름차순
-        int running = 0;
         int cnt = 0;
-        for (int i = 0; i < 24; i++) {
-            int currentPlayer = players[i];
-            int neededServer = currentPlayer / m;
-            while (!pq.isEmpty() && pq.peek() <= i) { //돌아가는 애들 중가장 빨리 끝나는 서버가 현재 시각보다 작다면 일단 서버 다 뺴
-                pq.poll();
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        int time = 0; //현재시각
+        //서버는 시간단위로 돌다가 꺼지고.. i시에 없으면 증설해야해..
+        for (int i = 0; i < players.length; i++) {// i [0,23]
+            int totalPlayer = players[i];
+            //시간 다된 서버들은 꺼져야함
+            while (!pq.isEmpty() && pq.peek() <= i) pq.poll();
+            int currentServers = pq.size(); //현재돌아가는 서버수..증설전
+            int moreServer = totalPlayer / m - currentServers;
+            if (moreServer <= 0) {
+                //서버가 필요없음..패스로직인데 뭐바꿔야하지 시간?시간관리해야함?i가있는디
             }
-            running = pq.size();// pq에는 돌아가는 서버들. 갯수구하기
-            int diff = neededServer - running; //더 띄울 서버들
-            for (int j = 0; j < diff; j++) {
-                pq.offer(i+k);
+            //필요한 서버만큼 추가증설
+            for (int j = 0; j < moreServer; j++) {
+                pq.offer(i + k);//종료시각명시
                 cnt++;
             }
         }
@@ -22,19 +25,22 @@ class Solution {
     }
 }
 /**
-서버 돌아가는 수
-현재 시간..
-현재 돌아가는 서버 정보를 들고다닐까? 그래서 업데이트를 하는거지.. 몇시에 몇개있고
-시간되면 또 계산 다시하고? 흠
+시뮬레이션?
+일단 m이있을떄 플레이어수를 m으로 나눈 몫만큼의 서버가 "필요"하다
+필요라는 것은 현재 있는 서버수 + 추가할 서버수.
 
-매번 뭐 해당시각에 서버 몇대돌아가는지 계산해도 문제없긴하지?
-시간24개 사람1000명최대
-k는24시? 
-서버 뭐 만힝해봤자 1000개 열어놓을테니까 
-널널하노 ㅋ
+그러면 음.. 시뮬레이션돌리면서 카운트할 각인데..
+24시간돌아가고 조건보니까 뭐 시뮬문제맞는듯. 그냥 뭐 복잡한 조건은 없어보여
 
-그러면 새로 추가한 모든 서버정보를 이제 추가를하는거여
-그리고 매 시간마다 돌아가는애들 몇대있는지 계산.. ㄱㄱ
-서버 정보는 열린시각 종료시각 하면 되는거잖아 . 정보 담고있다가 매 시간마다 시간보고 지낫으면 지우는거지 ㅋㅋ
-자료구조는 뭘 쓰면 좋을까? 지우기 좋은 list? 정렬이 되는 pq?pq 갠찮은데? 종료시각 일찍 인거부터 큐로 세워두고 가장 일찍 긑나는게 지금시각보다 클때까지 다 꺼내버려
+그러면 시간대로 돌아가면서..알야야할거는 돌아가고있는 서버의 수..그리고 음..시간추적
+그리고 음..종료되는 시간을 알아야 현재 서버수 추적가능.. 필요한건 쉽고.
+
+while(시간<종료) {
+    총필요한 서버수
+    현재 돌아가는 서버수(시간기준)
+    추가서버수 cnt.
+    추가서버 >> 자료구조인데.. 보통 음 이런 작업문제는 큐긴해 ㅋㅋ 여기선
+    종료시간있으니까 pq하면 크기로 쉽게 추적가능..
+}
+10분마...
 */
