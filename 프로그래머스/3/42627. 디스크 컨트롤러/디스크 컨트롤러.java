@@ -1,54 +1,58 @@
 import java.util.*;
 class Solution {
     public int solution(int[][] jobs) {
-        int[][] newJobs = new int[jobs.length][3];//번호 시점 시간
-        PriorityQueue<int[]> pq = new PriorityQueue<>( //번호, 요청시점, 소요시간
-            (o1, o2) -> {
-                if (o1[2] == o2[2]) {
-                    if (o1[1] == o2[1]) return o1[0] - o2[0];
-                    else return o1[1] - o2[1];
-                }else {
+        int[][] sortedJobs = new int [jobs.length][3];
+        //인덱스, 요청시간, 소요시간
+        for (int i = 0; i < jobs.length; i++) {
+            sortedJobs[i] = new int[] {i, jobs[i][0], jobs[i][1]};
+        }
+        Arrays.sort(sortedJobs, (o1, o2) -> o1[1] - o2[1]);
+        PriorityQueue<int[]> pq = new PriorityQueue<>(//얘는 인덱스..필요
+            (o1,o2) -> {
+                if (o1[2] != o2[2]) {//소요시간 짧은거
                     return o1[2] - o2[2];
+                }else {
+                    if (o1[1] != o2[1]) { //소요시간똑같으면 요청시각
+                        return o1[1] - o2[1];
+                    }else {//똑같으면 작업번호
+                        return o1[0] - o2[0];
+                    }
                 }
             }
         );
-        for (int i = 0;i < jobs.length; i++) {
-            newJobs[i][0] = i;
-            newJobs[i][1] = jobs[i][0];
-            newJobs[i][2] = jobs[i][1];
-        }
-        Arrays.sort(newJobs, (a,b) -> a[1] - b[1]);//시점기준 오름차순정렬
-        
-        int totalWait = 0;
-        int done = 0;
         int idx = 0;
-        int targetDone = jobs.length;
-        int time = 0;
-        while (done < targetDone) {
-            while (idx < jobs.length && newJobs[idx][1] <= time) {
-                pq.offer(newJobs[idx++]);
+        int t = 0;
+        int sum = 0;
+        int done = 0;
+        while (done < sortedJobs.length) {
+            //지금 t까지(포함) q에넣기
+            while (idx < sortedJobs.length && sortedJobs[idx][1] <= t) {
+                // System.out.printf("%d offered\n", idx);
+                pq.offer(sortedJobs[idx]);
+                idx++;
+            }
+            // System.out.printf("idx %d\n", idx);
+            //지금시간 + 얘의 소요시간 - 요청시각구해서 전체에 더한다.
+            // if (pq.isEmpty()) break;
+            // System.out.printf("%d %d %d polled\n", pq.peek()[0], pq.peek()[1], pq.peek()[2]);
+            if (pq.isEmpty()) {
+                t = sortedJobs[idx][1];
+            }else {
+                int[] polled = pq.poll();
+                t += polled[2];
+                // System.out.printf("%d added\n", t - polled[1]);
+                sum += (t - polled[1]);
+                done++;    
             }
             
-            //다음으로 이동... 큐가비엉있으면 다음작업으로 시간이동
-            if (pq.isEmpty()) {
-                //비어있으면 다음놈으로 시간이동
-                time = newJobs[idx][1];
-            }else { //차있으면 작업처리..: poll, 시간, 계산
-                int[] polled = pq.poll();//
-                done++;
-                time += polled[2];// 시간은 이미 처리되어있으니까 소요시간
-                totalWait += (time - polled[1]);
-            }
-        
         }
-        return totalWait / jobs.length;
+        return sum / sortedJobs.length;
+    
         
     }
 }
-        //내가  하고싶은것
-        //q돌면서 시간시뮬레이션 및 다음 작업 찾으면서 ..idx는 다음작업용이었던거 같다.
-        //정렬은 필요없다치고.. 정렬안하면 그냥 매번 풀스캔하면되잖어. 일단 해야하나?
-        //시간복잡도 jobs500이잖어.
-        //힙자체가 nlogn이고 매번 풀스캔하면 n이니까 n^2logn인데..
-        //n이 500이니까 충분
-        
+/**
+jobs가 정렬안한상태로 들어옴..
+그러면 이제 시간순으로 정렬을한다치면서 idx로 추적
+시간가지고 시뮬레이션돌리면서(왜냐하면 대기시간을 구해야하니까)
+*/
