@@ -2,107 +2,85 @@ import java.util.*;
 class Solution {
     int min = Integer.MAX_VALUE;
     public int solution(int[] picks, String[] minerals) {
-        backtrack(new Info(picks[0], picks[1], picks[2]), 0, minerals, 0, -1); //TODO
+        int[] choice = new int[(minerals.length + 5 - 1) / 5];
+        Arrays.fill(choice, -1);
+        backtrack(picks, minerals, 0, choice);
         return min;
     }
-    //5마다 고름..미리5칸계산 or 호출마다 배수보고 계산?ㅁㄹ
-    public void backtrack(Info info, int idx, String[] minerals, int curr, int holding) {
-        if (idx >= minerals.length || (idx % 5 == 0 && info.isEmpty())) {
-            // System.out.printf("updating... \n");
-            // System.out.printf("!!!info:(%d,%d,%d), idx: %d, curr: %d, hodling : %d!!!\n", info.dia, info.iron, info.stone, idx, curr, holding);
-            min = Math.min(curr, min);
+    //5개단위로 할건데 만약minerals가 13임. 그러면 13 / 5면 2인데 덩어리는 3개필요하다. 13 + 5 - 1 / 5 일케하면3.
+    //처음값ㅁ노르겠는데 암튼 nth가 저거 값보다 커지면안됨 근데 0index하ㅣ고 0 1 2 하고 3이면긑
+    public void backtrack(int[] picks, String[] minerals, int nth, int[] choice) {
+        if (nth == (minerals.length + 5 - 1) / 5 || allEmpty(picks)) {
+            //choice가지고 이제 꺼내서 실제로 계산하고 ..최솟값갱신
+            calculate(choice, minerals);
             return;
         }
-        // System.out.printf("info:(%d,%d,%d), idx: %d, curr: %d, hodling : %d\n", info.dia, info.iron, info.stone, idx, curr, holding);
-        
-        //5개단위 안함 -> 그냥 갯수그대로하고 idx, curr만 진행
-        //5개단위 깸 -> 골라야함 0,
-        //idx가 지금 0이면 골라야함  5면 골라야함..
-        // 골라0 1 2 3 4 5 6 7 8 9 10
-        if (idx % 5 == 0) {
-            //골라서 백트래킹
-            if (info.dia > 0) {
-                info.dia--;//뽑음
-                
-                backtrack(info, idx + 1, minerals, curr + getDiff(minerals[idx], 0), 0);
-                info.dia++;
-        
-            }
-            if (info.iron > 0) {
-                info.iron--;//뽑음
-                    backtrack(info, idx + 1, minerals, curr + getDiff(minerals[idx], 1), 1);
-                info.iron++;
-                
-            }
-            if (info.stone > 0) {
-                info.stone--;//뽑음
-                         backtrack(info, idx + 1, minerals, curr + getDiff(minerals[idx], 2),2);
-                info.stone++;
-            }
-                
-        }else {//그냥 진행. 피로도만
-            //지금 뭐들고있는지에 따라 다름.
-            int diff = getDiff(minerals[idx], holding);
-            
-            backtrack(info, idx + 1, minerals, curr + diff, holding);
-            //얜 값안바뀌었으니까 백트래킹안해도됨
+        // System.out.printf("nth %d \n", nth);
+        if (picks[0] > 0) {
+            choice[nth] = 0;//dia
+            picks[0]--;
+            backtrack(picks, minerals, nth + 1, choice);
+            picks[0]++;
         }
+        if (picks[1] > 0) {
+            choice[nth] = 1;//iron
+            picks[1]--;
+            backtrack(picks, minerals, nth + 1, choice);    
+            picks[1]++;
+        }
+        if (picks[2] > 0) {    
+            choice[nth] = 2;//stone
+            picks[2]--;
+            backtrack(picks, minerals, nth + 1, choice);
+            picks[2]++;
+        }
+        //backtrack해야하나?
+    }
+    public void calculate(int[] choice, String[] minerals) {
+        //choice에ㅐ는 5개단위로 뭐썼는지 적혀있음. minerals 순회하면서 계산하면됨
+        int fatigue = 0;//피로도
+        // System.out.printf("========\n");
+        for (int i = 0; i < choice.length; i++) {
+            int pick = choice[i]; //이거가지고 5개 캙럿.
+            if (pick == -1) break;
+            // System.out.printf("pick : %d \n", pick);
+            if (pick == 0) { //dia로캠..i * 5로부터 5개
+                for (int j = 0; j < 5; j++) {
+                    int index = i * 5 + j;
+                    if (index >= minerals.length) break;
+                    fatigue++;
+                }
+            }else if (pick == 1) { //iron으로캠
+                for (int j = 0; j < 5; j++) {
+                    int index = i * 5 + j;
+                    if (index >= minerals.length) break;
+                    if (minerals[index].equals("diamond")) fatigue += 5;
+                    else fatigue++;
+                }
+            }else{//stone으로캠
+                for (int j = 0; j < 5; j++) {
+                    int index = i * 5 + j;
+                    if (index >= minerals.length) break;
+                    if (minerals[index].equals("diamond")) fatigue += 25;
+                    else if(minerals[index].equals("iron")) fatigue += 5;
+                    else fatigue++;
+                }
+            }
+        }
+        // System.out.printf("피로도 : %d\n", fatigue);
+        min = Math.min(fatigue, min);
+        return;      
+    }
+    public boolean allEmpty(int[] picks) {
+        for (int p : picks) if (p != 0) return false;
+        return true;
     }
     
-    
-    
-    
-    public int getDiff(String mineral, int holding) {
-        if (holding == 0) {
-            return 1;
-        }else if (holding == 1) {
-            if (mineral.equals("diamond")) return 5;
-            else return 1;
-        }else {
-            if (mineral.equals("diamond")) return 25;
-            else if(mineral.equals("iron")) return 5;
-            else return 1;
-        }
-
-    }
-    
-    public class Info {
-        int dia;
-        int iron;
-        int stone;
-        Info (int dia, int iron, int stone) {
-            this.dia = dia;
-            this.iron = iron;
-            this.stone = stone;
-        }
-        public boolean isEmpty() {
-            if (this.dia <= 0 && this.iron <= 0 && this.stone <= 0) {
-                // System.out.printf("empty!%d %d %d\n", this.dia, this.iron, this.stone);
-                return true;
-            }
-            else return false;
-        }
-    }
 }
 /**
-곡괭이는 0-5개씩있다
-곡괭이 꺼내면 사용없을떄까지 사용.(5개..피로도랑 내구도랑은 별개)
-광물은 정해진 순서가있다.
-종료는 다캐거나 곡괭이없을떄(할게없을떄)
-그니까 minerals를 뚫고 지나갈건데 뭐부터 쓸거냐 이거지..
-근데 곡괭이는 같은종류 연속으로 써야하는건아님.5개 다썼으면 다른거 뽑아도됨..
-예시가 좀 불친절.
-그러면 이거도 뭐 5개단위로 가는거고 백트래킹이지
-각가 3개씩 있다면 
-최악의 경우 3 ^ 15완전맥스인데 그건아님
-3 * 3 * 3 * 3 * 3 * 2 * 2 * 2 * 2 * 2 * 1  ^ 1 ^ 1 ^ 1정도.
-그냥 하는게 더 낫긴해 뭐 어차피 연속으로 광물있는게 아니니까 이문제는 그냥 브루틒포스임
-그렇다면 매 백트래킹에서 남은갯수를 가지고있어야하고,, 현재 뭐파고있는지 idx필요.
-그러면 음..남은갯수니까 그냥 들고다니면 되는거아님?
+picks 는  dia iron stone각 갯수
+minerals는 순서대로만 캐는것이 가능.
+minerals 최대50..인데 5개씩 캐니까 총 10번의 선택을한다. 3^10이면 가능
 
-잠깐 멀리봐
-자.. 5개단위로 쓸수있는거야.. 
-0 1 2 3 4 5
-left가없으면 그냥 비어있다고 종료돼. 그래서 left필드를 추가해서 막았어
-근데 그걸로 막으니까 종료조건이 호출이 안되네 2번테케에선
+피로도 계산은 마지막에 하는게 깔끔.
 */
