@@ -1,64 +1,66 @@
 import java.util.*;
 class Solution {
     public int[] solution(int[] fees, String[] records) {
-        Map<Integer, Integer> accum = new HashMap<>(); //<차번호,누적시간>
-        Map<Integer, Integer> inTime = new HashMap<>(); //차번호, 입차시간(분으로)
+        Map<String, Integer> accum = new HashMap<>();//누적시간
+        Map<String, Integer> parked = new HashMap<>(); //입차한 차들..<번호,시각>
         
+        //accum 완성
         for (String r : records) {
-            //입차면 입차
-            //출차면 누적시간계산만.
             String[] parts = r.split(" ");
-            int plate = Integer.parseInt(parts[1]);
             int time = toMinute(parts[0]);
-            if (parts[2].equals("IN")) { //입차.. 같은번호X
-                inTime.put(plate, time);
-            }else {//출차. 누적시간계산. 주차목록엔 무조건있음.
-                int in = inTime.get(plate);//이게무조건있다.
-                //출차처리
-                inTime.remove(plate);
-                int timeDiff = time - in;
-                accum.put(plate, accum.getOrDefault(plate, 0) + timeDiff);
+            String plate = parts[1];
+            String cmd = parts[2];
+            
+            //cmd가 in이면 입차. 중복차량없으니 그냥입차하면됨. 입치map에 시각찍으면됨
+            if (cmd.equals("IN")) {
+                parked.put(plate, time);
+            }
+            //out이면 누적시간추가하고 set에서 제거. 누적시간은 입차한게 set가 map이여ㅑㅎ
+            else {
+                //in목록에서 지금시각time이랑 거기서얻은거랑 차이구하고 accum에 추가.in제거
+                int diff = time - parked.get(plate);
+                accum.put(plate, accum.getOrDefault(plate, 0) + diff);//시간 계산
+                parked.remove(plate);//입차목록에서 제거
             }
         }
-        //출차안된거 누적시간계산
-        for (int plate : inTime.keySet()) {
-            accum.put(plate, accum.getOrDefault(plate, 0) + 23*60 + 59 - inTime.get(plate));//출차안된 번호판들의 누적시간을 계산. 출차시간은 2359라치고 
+        //parked남은애들 2359로 계산
+        for (Map.Entry<String, Integer> entry : parked.entrySet()) {
+            int end = toMinute("23:59");
+            int diff = end - entry.getValue();
+            accum.put(entry.getKey(), accum.getOrDefault(entry.getKey(), 0) + diff);
         }
-        // for (int plate : accum.keySet()) {
-        //     System.out.printf("(%d, %d)\n", plate, accum.get(plate));
-        // }
-        //요금계산(fees활용)
+        //accum 돌면서 fees가지고 계싼
         List<Integer> ans = new ArrayList<>();
-        int baseTime = fees[0];
-        int baseFee = fees[1];
-        int unitTime = fees[2];
-        int unitFee = fees[3];
-        List<Integer> sortedPlates = new ArrayList<>(accum.keySet());
-        sortedPlates.sort((a,b) -> a - b);
-        for (int plate : sortedPlates) {
-            //누적시간이 기본시간보다 작으면 기본요금만
-            int carTotalTime = accum.get(plate);
-            if (carTotalTime <= baseTime) {
-                ans.add(baseFee);
-            }else {
-                int extra = ((carTotalTime - baseTime + unitTime - 1) / unitTime) * unitFee;
-                ans.add(baseFee + extra);
-            }
+        List<String> keys = new ArrayList<>(accum.keySet());
+        keys.sort(null);
+        for (String key : keys) {
+            int basetime = fees[0];
+            int defaultfee = fees[1];
+            int unittime = fees[2];
+            int unitcost = fees[3];
+            
+            int carParkedFor = accum.get(key);//해당 차 전체 주차시간
+            int leftover = carParkedFor - basetime < 0 ? 0 : carParkedFor - basetime;
+            int total = defaultfee + (leftover + unittime - 1) / unittime * unitcost;
+            ans.add(total);
         }
+        
         return ans.stream().mapToInt(i->i).toArray();
+        
     }
     public int toMinute(String str) {
         String[] parts = str.split(":");
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
 }
-/**
-누적으로하는거임. 입차출차 하면 바로 하는게아니라 총 누적시간!
-기본 + 추가(올림처리)
 
-어떻게 풀것이냐?
-일단 records를 돌아야지.돌면서 뭘하냐?
-정리를해. 자료구조가 필요할것임. 그러면 자료구조엔 뭘저장해? 차량번호,누적시간, 입차시간
-그러면 두개로 <차량번호, 누적시간> 이랑 <차량번호, 입차시간>.이걸 바탕으로
-입차나오면 입차에 넣고.. 출차면 누적시간추가.
+/**
+[문제이해]
+fees에는 요금정보: 기본시간 기본요금 단위시간 단위요금
+records는 정보.. 입차시각 번호 내역
+
+차량별로 누적시간구해서 정산.
+[조건]
+1. 출차없으면 23:59기준
+2. 차량번호 작은순으로 리턴
 */
