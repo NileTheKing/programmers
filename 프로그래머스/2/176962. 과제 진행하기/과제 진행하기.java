@@ -1,69 +1,68 @@
 import java.util.*;
 class Solution {
     public String[] solution(String[][] plans) {
-        Assignment[] assign = new Assignment[plans.length];
+        Task[] enhancedPlans = new Task[plans.length];
         for (int i = 0; i < plans.length; i++) {
-            String[] p = plans[i];
-            String name = p[0];
-            String[] timeParts = p[1].split(":");
-            int startAt = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
-            int duration = Integer.parseInt(p[2]);
-            assign[i] = new Assignment(name, startAt, duration);
+            String[] plan = plans[i];
+            String subject = plan[0];
+            String[] timeParts = plan[1].split(":");
+            int time = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
+            int duration = Integer.parseInt(plan[2]);
+            
+            enhancedPlans[i] = new Task(subject, time, duration);
         }
-        Arrays.sort(assign, (o1, o2) -> o1.startAt - o2.startAt);
-        int idx = 0; //다음작업
-        int doneCnt = 0;
-        int time = 0;
-        ArrayDeque<Assignment> stack = new ArrayDeque<>();
+        Arrays.sort(enhancedPlans, (o1, o2) -> o1.time - o2.time);
+        
+        ArrayDeque<Task> stack = new ArrayDeque<>();
         List<String> ans = new ArrayList<>();
-        while (doneCnt < plans.length && idx < assign.length - 1) {
-            Assignment current = assign[idx];
-            Assignment next = assign[idx + 1];
-            idx++;
-            int timeUntilNext = next.startAt - current.startAt;
-            // System.out.printf("")
-            if (timeUntilNext >= current.duration) {//시간이 남는다.완료
-                ans.add(current.name);
-                timeUntilNext -= current.duration;
-                while (!stack.isEmpty() && timeUntilNext >= 0) {
-                    Assignment popped = stack.pop();
-                    if (timeUntilNext - popped.duration >= 0) {
-                        ans.add(popped.name);
-                        timeUntilNext -= popped.duration;
-                    }else {
-                        popped.duration -= timeUntilNext;
-                        timeUntilNext = -1;
-                        stack.offerFirst(popped);
-                    }
+        for (int i = 0; i < enhancedPlans.length - 1; i++) {
+            //지금 작업 i인덱스거 하고 시간..체크
+            Task current = enhancedPlans[i];
+            stack.offerFirst(current);
+            Task next = enhancedPlans[i + 1];
+            int timeLeft = next.time - current.time;//다음 실행까지 남은시간
+            // System.out.printf("===current: %s, next:%s, timeLeft : %d===\n", current.subject, next.subject, timeLeft);
+            
+            while (!stack.isEmpty() && timeLeft > 0) {//시간이 조금이라도 남았으면 조금이라도 하고 스택에넣음
+                Task popped = stack.pollFirst();//이번에 수행할작업
+                int gap = timeLeft - popped.duration;// 남은시간 - 소요시간..다하고 몇분남냐이거임 +이면 남는거구 -이면 부족한거..그러면 부족한거만큼뺴고 가능.예를들어 5만큼부족하면 5ㄴ남는거
+                // System.out.printf("popped %s, gap: %d\n", popped.subject, gap);
+                if (gap >= 0) { //다함
+                    //pop유지..남은시간갱신
+                    // System.out.printf("done %s\n",popped.subject);
+                    ans.add(popped.subject);
+                    timeLeft -= popped.duration;
+                    // System.out.printf("timeLeft %d\n",timeLeft);
+                }else {// 시간안에 다 못함..그러니까 시간0으로만들고 다시넣기
+                    popped.duration = -gap;
+                    // System.out.printf("done a bit..%s duration now..%d\n", popped.subject, popped.duration);
+                    stack.offerFirst(popped);
+                    timeLeft = 0;
                 }
-            }else {//시간 안남으면 어쩔수없지
-                current.duration -= timeUntilNext;
-                stack.offerFirst(current);
             }
-                
         }
-        stack.offerFirst(assign[idx]);
-        while (!stack.isEmpty()) {
-            ans.add(stack.pollFirst().name);
-        }
+        //이제 마지막거 처리할 시간..얘 스택에 걍 넣고 뽑으면됨
+        stack.offerFirst(enhancedPlans[enhancedPlans.length - 1]);
+        while (!stack.isEmpty()) ans.add(stack.pollFirst().subject);
         return ans.toArray(new String[0]);
-
     }
-    public class Assignment {
-        String name;
-        int startAt;
+    class Task {
+        String subject;
+        int time;
         int duration;
-        Assignment (String name, int startAt, int duration) {
-            this.name = name;
-            this.startAt = startAt;
+        Task (String subject, int time, int duration) {
+            this.subject = subject;
+            this.time = time;
             this.duration = duration;
         }
     }
 }
 /**
-과제목록이있따..시작되면 하고.. 시간!이 되면 새로운과제를한다
-시간남으면 멈ㅊ춰준거 함..근데 최근에 멈춘거. 
-그러면 스택이 필요할듯? 과제 진행상황은 카운터로 해야할거고..인덱스말고.
-근데 순서대로 진행해야하긴하니까.. 정렬해서 다음과제 idx는 추적해야하함
-일단 정렬해서 하긴해야함.. 시작순이 필요해서. 근데 string으로 주어졌으니까 ..근데 꺼냈을떄 시간봐야하니까 그냥 변환때려서 새로운 자료형으로 변환하는게 나을거같어
+plans가 있는데 시간순으로 함. 그래서 정렬해둬야함. 자료형 정의?(커스텀화?) 음 굳이 필요안할수됬고
+근데 해두면 편하긴하지?
+idx끝일떄까지 하는거
+
+그리고 끝나고나서 마무리
+
+하던작업은 스택.
 */
