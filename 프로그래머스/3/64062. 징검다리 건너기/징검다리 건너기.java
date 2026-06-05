@@ -1,53 +1,36 @@
 class Solution {
     public int solution(int[] stones, int k) {
-        int r = Integer.MAX_VALUE;
-        int l = 0;
-        int ans = 0;
-        //int debugLimit = 0;
+        long l = 0;
+        long r = Long.MAX_VALUE;
+        long ans = 0;
         while (l <= r) {
-            //debugLimit++;
-            int m = l + (r - l)/ 2;
-            
-            int prev = -1;//마지막 인덱스
-            int max = Integer.MIN_VALUE;//건너가기위해 필요한 점프능력
+            long m = (l + r) / 2;
+            // System.out.printf("===%d===\n", m);
+            //m명 가능했다고 가정해서 다 깎아버린다음에..예를들어 m이 20임.
+            //그러면 20명 지나가면 20깎여있을거고.. 그 상태에서 가능하면 m+1명가능으로 메모지.
+            //암튼 m숫자깎고 m+1명 가정으로하는것. for로 stones깎인거돌고 최대거리찾아서k이상이면 불가 이하면 가능
+            //지금 하고자 하는것: 최대거리구하기.
+            int prev = -1;
+            int max = -1;
             for (int i = 0; i < stones.length; i++) {
-                //m만큼 숫자를 깐 상태에서..건널수있으면
-                if (stones[i] - m > 0) {
-                    max = Math.max(max, i - prev);//이칸 뛰어넘음.
-                    prev = i;
+                if (stones[i] - m < 0) {
                 }else {
-                    //이건 패스해야함
+                    max = Math.max(max, i - prev);
+                    // System.out.printf("i, prev, max: %d %d %d\n",i,prev,max);
+                    prev = i;//밟음
                 }
             }
-            //마지막prev에서 길이도재야함
-            max = Math.max(stones.length - prev, max);
-            // System.out.printf("m, max, k : %d %d %d\n", m,max,k);
-            //너무 많이 뛰어야한다 -> 너무 많이 건너가는게 목표다
-            if (max > k) {
-                r = m - 1;
-            }else {
-                ans = m + 1;
+            max = Math.max(max, stones.length - prev);
+            // System.out.printf("max %d\n", max);
+            if (max != -1 && max <= k) {
+                // System.out.printf("%d success %d renew\n", m, m + 1);
+                ans = m;
                 l = m + 1;
+            }else {
+                r = m - 1;
             }
         }
-        return ans;
+        return (int)ans;
     }
 }
-/**
-뭔가 시뮬레이션같기도 하면서
-야 이거 그거네.......잔디깎기;;;그거아니면 그내가 했떤 카드뽑기; 하
-풀었던거네 ㄹㅈㄷ
-stone배열이 20만이라 시뮬하면 백~~퍼 터지지
-아하 ㅋ그러면 이분탐색이고.. 아 쉽다
-뭐 이것저것해야하니까 자료형 주의하시고~
-근데 어떻게하드라 ㅋㅋ 일단 음..
-이분탐색에서 ..음... 일단 뭐 깎고 뭐 어쩌고 하는 작업이 있을거임.
-아 머리아픔
-음..자 생각해보자
-1000명이 간다쳐봐 그러면 .. 뭐야 음수인 애들있을거아니야.
-그렇다치면...
-
--1 1 2 0 -1 -2 1 -1 2 -2
-3일때.. 다 깎아버려. 그러면 이렇게되ㅗㄱ 이상태에서 k조건으로 건널수있는지 체크하면 되는거아님?
-간단한디? 뭐 할것도없고.. 이게끝..? 이상태에서..못건넘
-*/
+        //2억명도 가능하니까 시뮬레이션돌리ㅕ면 터짐. 이분탐색
