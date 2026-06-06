@@ -1,10 +1,10 @@
 # [level 2] [3차] 파일명 정렬 - 17686 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/17686) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/17686#) 
 
 ### 성능 요약
 
-메모리: 116 MB, 시간: 18.62 ms
+메모리: 79.2 MB, 시간: 14.19 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2026년 05월 07일 00:44:54
+2026년 06월 06일 18:00:49
 
 ### 문제 설명
 
