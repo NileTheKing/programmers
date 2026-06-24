@@ -1,67 +1,75 @@
 import java.util.*;
 class Solution {
     public long solution(String expression) {
-        char[][] priority = getPriority();
-
         long max = 0;
-        for (char[] p : priority) {//모든 경우의수(우선순위)
-            //각 우선순위에 대해 계산해보기
-            List<Long> operand = new ArrayList<>();
-            List<Character> operator = new ArrayList<>();
-            int ptr = 0;
-            int length = expression.length();
-            //ptr를 숫자아닌곳까지 한다음에 숫자분리
-            while (ptr < length) {
-                int tmp = ptr;
-                while (tmp < length && Character.isDigit(expression.charAt(tmp))) tmp++;
-                //tmp는 연산자
-                operand.add(Long.parseLong(expression.substring(ptr, tmp)));
-                if (tmp < length)operator.add(expression.charAt(tmp));
-                ptr = tmp + 1;
-            }
-            
-            for (char op : p) { //우선순위에 맞게 계산
-                int size = operator.size();
+        //6가지 경우의수 순회
+        char[][] candidates = getCandidates();
+        //list로 분리해야하나? 만들어야한다. 근데 어떻게?
+        List<String> list = getList(expression);
+
+        for (char[] c : candidates) {
+            List<String> copy = new ArrayList<>(list);
+            // System.out.printf("====try====\n");
+            for(char operator : c) {
+                //이제 copy를 순회해야함근데 길이가 바뀜..
+                int size = copy.size();
                 for (int i = 0; i < size; i++) {
-                    if (operator.get(i) != op) continue;
-                    long op1 = operand.get(i);
-                    long op2 = operand.get(i + 1);
-                    long val = calculate(op1, op2, op);
-                    operator.remove(i);
-                    operand.remove(i);
-                    operand.remove(i);
-                    operand.add(i, val);
-                    //list가 변했으므로 조정
-                    size--;
-                    i--;
+                    if (copy.get(i).charAt(0) == operator) {
+                        long val1 = Long.parseLong(copy.get(i - 1));
+                        long val2 = Long.parseLong(copy.get(i + 1));
+                        long calc = calc(val1, val2, operator);
+                        copy.remove(i - 1);
+                        copy.remove(i - 1);
+                        copy.remove(i - 1);
+                        copy.add(i - 1, String.valueOf(calc));
+                        i = i - 1;
+                        size -= 2;
+                    }
                 }
+                // System.out.println(copy);
             }
-            //싹다 계산되고 하나남았음
-            max = Math.max(Math.abs(operand.get(0)), max);
+            max = Math.max(max, Math.abs(Long.parseLong(copy.get(0))));
         }
-        
         return max;
     }
-    public char[][] getPriority() {
-        char[][] res = new char[6][3];
-        //* + -
-        res[0] = new char[] {'*', '+', '-'};
-        res[1] = new char[] {'*', '-', '+'};
-        res[2] = new char[] {'+', '*', '-'};
-        res[3] = new char[] {'+', '-', '*'};
-        res[4] = new char[] {'-', '*', '+'};
-        res[5] = new char[] {'-', '+', '*'};
+    public long calc(long n1, long n2, char operator) {
+        if (operator == '+') {
+            return n1 + n2;
+        }else if(operator == '*') {
+            return n1 * n2;
+        }else {
+            return n1 - n2;
+        }
+    }
+    public List<String> getList(String str) {
+        int ptr = 0;
+        List<String> res = new ArrayList<>();
+        while (ptr < str.length()) {
+            int tmp = ptr;
+            while (tmp < str.length() && Character.isDigit(str.charAt(tmp))) {
+                tmp++;
+            }
+            res.add(str.substring(ptr, tmp));
+            if (tmp < str.length())
+                res.add(String.valueOf(str.charAt(tmp)));
+            ptr = tmp + 1;
+        }
         return res;
     }
-    public long calculate(long op1, long op2, char operator) {
-        switch(operator) {
-            case '*':
-                return op1 * op2;
-            case '+':
-                return op1 + op2;
-            case '-':
-                return op1 - op2;
-        }
-        return -1;
+    public char[][] getCandidates() {
+        return new char[][] {
+            {'+','-','*'},
+            {'+','*','-'},
+            {'-','+','*'},
+            {'-','*','+'},
+            {'*','-','+'},
+            {'*','+','-'}
+        };
     }
 }
+/**
+6개 배열(경우의수 3!)
+expression순회하면서 6가지 경우의수를 다 한다. 각 경우에 대해 최댓값갱신
+각 경우는 우선순위에 맞는 수식찾으면 계산을 한다.
+시간복잡도 O(n * 6 * 3 * n) ->가능
+*/
