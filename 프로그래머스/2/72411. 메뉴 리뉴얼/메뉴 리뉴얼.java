@@ -1,56 +1,52 @@
 import java.util.*;
 class Solution {
-    Map<String, Integer> courseCandidates;
+    Map<String, Integer> candidates = new HashMap<>();//주문 목록으로 부터 추출한 가능성있는 <조합, 등장횟수>
     public String[] solution(String[] orders, int[] course) {
-        courseCandidates = new HashMap<>();
-        List<String> ans = new ArrayList<>();
+        //메누순회
         for (String o : orders) {
-            //모든 조합을 구한다..길이2이상만 일단모아야함.미리필터링
-            char[] ochar = o.toCharArray();
-            Arrays.sort(ochar);
-            String sortedO = new String(ochar);
-            getCandidates(sortedO, 0, new StringBuilder());
+            //각메뉴들을 정렬후, 가능성 만들기.
+            char[] tmp = o.toCharArray();
+            Arrays.sort(tmp);
+            String sortedOrder = new String(tmp);
+            // System.out.printf("===Trying %s===\n", sortedOrder);
+            calculateCombo(sortedOrder, new StringBuilder(), 0);//TODO
         }
-        for (Map.Entry<String, Integer> entry : courseCandidates.entrySet()) {
-            // System.out.printf("%s,%d\n", entry.getKey(), entry.getValue());
-        }
-        //이제 원하는 길이별로-1 , 2번이상주문-2 2개조건으로 필터링 작업을 수행한다. 
+        List<String> ans = new ArrayList<>();
+        // System.out.println("completed candidates");
+        // System.out.println(candidates);
         for (int c : course) {
-            //길이가c여야함
+            //candidatse순회하면서 c인거만 추가.
+            //c는 메뉴구성갯수임.
+            // System.out.printf("===코스길이 %d시도중===\n", c);
             int max = 0;
-            for (Map.Entry<String, Integer> entry : courseCandidates.entrySet()) {
-                //길이c(key의 길이), value의값
-                if (entry.getKey().length() == c && entry.getValue() >= 2) {
-                    //추가하는데 사전오름차수는 여기 OR 마지막에.
-                    max = Math.max(max, entry.getValue());
-                }
+            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
+                if (entry.getKey().length() != c) continue;
+                // ans.add(entry.getKey());
+                max = Math.max(max, entry.getValue());
             }
-            // System.out.printf("===%d length, max: %d===\n", c, max);
-            for (Map.Entry<String, Integer> entry : courseCandidates.entrySet()) {
-                //길이c(key의 길이), value의값
-                if (entry.getKey().length() == c && entry.getValue() == max) {
-                    // System.out.printf("%s, %d..match the max %d\n", entry.getKey(), entry.getValue(), max);
-                    ans.add(entry.getKey());
-                }
+            // System.out.printf("최대반복: %d\n", max);
+            if (max < 2) continue;
+            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
+                if (entry.getKey().length() != c || entry.getValue() != max) continue;
+                // System.out.printf("max: %d, menu: %s, frequency: %d\n", max , entry.getKey(),entry.getValue());
+                ans.add(entry.getKey());
             }
-            
         }
-        ans.sort((o1, o2) -> o1.compareTo(o2));
+        ans.sort(null);
         return ans.toArray(new String[0]);
-        // return new String[0];//debug
     }
-    public void getCandidates(String order, int idx, StringBuilder current) {
-        if (idx == order.length()) {
-            if (current.length() >= 2) {
-                String currentString = current.toString();
-                courseCandidates.put(currentString, courseCandidates.getOrDefault(currentString, 0) + 1);
-            }
+    public void calculateCombo(String str, StringBuilder current, int idx) {
+        if (idx == str.length()) {
+            if (current.length() < 2) return;
+            candidates.put(current.toString(), candidates.getOrDefault(current.toString(), 0) + 1);
+            // System.out.printf("candidates: <%s, %d>\n", current.toString(), candidates.get(current.toString()));
             return;
         }
-        current.append(order.charAt(idx));
-        getCandidates(order, idx + 1, current);
+    
+        current.append(str.charAt(idx));
+        calculateCombo(str, current, idx + 1);
         current.deleteCharAt(current.length() - 1);
-        getCandidates(order, idx + 1, current);
-        
+        calculateCombo(str, current, idx + 1);
+        return;
     }
 }
