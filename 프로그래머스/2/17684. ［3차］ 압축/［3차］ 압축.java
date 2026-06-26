@@ -2,31 +2,31 @@ import java.util.*;
 class Solution {
     public int[] solution(String msg) {
         Map<String, Integer> dict = new HashMap<>();
-        for (int i = 0; i < 26; i++) {
-            char c = (char)('A' + i);
-            dict.put(String.valueOf(c), i + 1);
-        }
-        //msg순회하면서..
-        int idx = 0; //msg인덱스
-        int dictNextIndex = 27;
+        //1자리 초기화
+        for (int i = 0; i < 26; i++) dict.put(String.valueOf((char)('A' + i)), i + 1);
+        int idx = 27;
+        // System.out.println(dict);
         List<Integer> ans = new ArrayList<>();
-        while (idx < msg.length()) {
-            int tmp = idx + 1; //substring해야하니까 ..1뒤부터.
-            while (tmp <= msg.length() && dict.containsKey(msg.substring(idx, tmp))) {
+        int ptr = 0;
+        int cnt = 0;
+        while (ptr < msg.length()) {
+            // System.out.printf("===start of ptr : %d=====\n", ptr);
+            int tmp = ptr + 1;
+            while (tmp <= msg.length() && dict.containsKey(msg.substring(ptr, tmp))) {
                 tmp++;
-            } //01하면 0 02했는데2글자 안됨
-            //지금 tmp2이니까 안됨.. 01해서 있었으면..0끝낸거고 다음ㅊ차례는1
-            int dictIndex = dict.get(msg.substring(idx, tmp - 1));
-            ans.add(dictIndex);
-            
-            //없는단어면 추가.뭘? idx, tmp+1 substring을..ㅇ
-            if (tmp < msg.length()) {
-                dict.put(msg.substring(idx, tmp), dictNextIndex++);
             }
-            idx = tmp - 1; //다음거
+
+            ans.add(dict.get(msg.substring(ptr, tmp - 1)));
+            if (tmp < msg.length()) dict.put(msg.substring(ptr, tmp), idx++);
+            
+            // System.out.printf("after while\n");
+            // System.out.printf("ans added: %s %d\n", msg.substring(ptr, tmp - 1), dict.get(msg.substring(ptr, tmp -1 )));
+            // System.out.printf("dict put: %s %d\n", msg.substring(ptr, tmp), idx);
+            // System.out.printf("tmp : %d\n", tmp);
+            // idx++;
+            // cnt++;
+            ptr = tmp - 1;
         }
         return ans.stream().mapToInt(i -> i).toArray();
-        
-        // return new int[0];//debug
     }
 }
