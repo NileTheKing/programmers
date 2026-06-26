@@ -1,50 +1,46 @@
 import java.util.*;
 class Solution {
     public int[] solution(String[] enroll, String[] referral, String[] seller, int[] amount) {
-        Map<String, Integer> account = new HashMap<>();
-        Map<String, String> parentMap = new HashMap<>();
-        //추천인(부모) 정보
-        for (int i = 0; i < referral.length; i++) {
-            parentMap.put(enroll[i], referral[i]);
-            account.put(enroll[i], 0);
-        }
-        //seller amount 순회하면서 갱신
+        
+        Map<String, Integer> moneyEarned = new HashMap<>();
+        Map<String, String> parent = new HashMap<>();
+        int len = enroll.length;
+        for (int i = 0; i < len; i++) parent.put(enroll[i], referral[i]);
+        // System.out.println(parent);
         for (int i = 0; i < seller.length; i++) {
-            //각 판매건마다.. 수익발생하고 본인가지고 부모한테 쭈우욱올라가는거임..근데 이게 재귀적인거
-            
-            int total = 100 * amount[i];
-            String whoSold = seller[i];
-            while (true) {
-                if (whoSold.equals("-")) break;
-                int toGive = total * 1 / 10;
-                int mine = total - toGive;
-                String parent = parentMap.get(whoSold);
-                //내몫
-                account.put(whoSold, account.getOrDefault(whoSold, 0) + mine);
-                //부모몫챙기기
-                if (toGive < 1)  { //근데 부모몫없으면 내가
-                    //내가가지고 
-                    account.put(whoSold, account.getOrDefault(whoSold, 0) + toGive);
+            // System.out.printf("==== idx : %d====\n", i);
+            //계산
+            int total = amount[i] * 100;
+            String sold = seller[i];
+            while (total >= 1) {
+                if (sold.equals("-")) break;
+                int share = total * 1 / 10;
+                int mine = total - share;
+                if (share < 1) {
+                    moneyEarned.put(sold, moneyEarned.getOrDefault(sold, 0) + total);
                     break;
-                }else {
-                    total = toGive;
-                    whoSold = parent;
                 }
+                moneyEarned.put(sold, moneyEarned.getOrDefault(sold, 0) + mine);
+                // System.out.printf("seller parent total share mine:%s %s %d %d %d\n", sold, parent.get(sold), total, share, mine);
+                total = share;
+                sold = parent.get(sold);
             }
         }
         int[] ans = new int[enroll.length];
         for (int i = 0; i < enroll.length; i++) {
-            ans[i] = account.get(enroll[i]);
+            if (moneyEarned.get(enroll[i]) == null) continue;
+            ans[i] = moneyEarned.get(enroll[i]);
         }
         return ans;
         
     }
 }
 /**
-노드 10000
-enroll referral 길이도잉ㄹ
-seller는 판매정보 100000.. amount도 길이동일. 두개세트로 판매정보
-그러면.. 정산을 해가지고 enroll순서대로하면서 얼마씩 벌었느지 리턴..
-그러면 자료구조에 담고있어야하고.. map하면되겠음.getordefault
-그리고 부모를 알고있어야함..그래서 음 이거는 string기반으로ㅓ 접근해야하니까(인덱스아니고) 맵
+노드 10000개
+간선 10000개
+
+금액계산해서 enroll순서대로 수익금나열
+
+절삭
+돈이 타고올라가는데 언제까지? 10%한게 1보다 작으면 거기까지
 */
