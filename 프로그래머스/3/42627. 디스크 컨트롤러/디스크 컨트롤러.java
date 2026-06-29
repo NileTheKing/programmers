@@ -1,58 +1,44 @@
 import java.util.*;
 class Solution {
     public int solution(int[][] jobs) {
-        int[][] sortedJobs = new int [jobs.length][3];
-        //인덱스, 요청시간, 소요시간
-        for (int i = 0; i < jobs.length; i++) {
-            sortedJobs[i] = new int[] {i, jobs[i][0], jobs[i][1]};
-        }
-        Arrays.sort(sortedJobs, (o1, o2) -> o1[1] - o2[1]);
-        PriorityQueue<int[]> pq = new PriorityQueue<>(//얘는 인덱스..필요
-            (o1,o2) -> {
-                if (o1[2] != o2[2]) {//소요시간 짧은거
-                    return o1[2] - o2[2];
-                }else {
-                    if (o1[1] != o2[1]) { //소요시간똑같으면 요청시각
-                        return o1[1] - o2[1];
-                    }else {//똑같으면 작업번호
-                        return o1[0] - o2[0];
-                    }
-                }
+        PriorityQueue<int[]> pq = new PriorityQueue<>(
+            (o1, o2) -> {
+                if (o1[2] == o2[2]) {//소요시간
+                    if (o1[1] == o2[1]) return o1[0] - o2[0];
+                    else return o1[1] - o2[1];
+                }else return o1[2] - o2[2];
             }
-        );
-        int idx = 0;
+        ); //extrajob [작업번호,ㅇ ㅛ청시각, 소요시간]
+        Arrays.sort(jobs, (o1, o2) -> o1[0] - o2[0]);
+        //이제 q에 작업들이있다. 다 될떄까지 하면 됨
+        int ans = 0;
         int t = 0;
-        int sum = 0;
-        int done = 0;
-        while (done < sortedJobs.length) {
-            //지금 t까지(포함) q에넣기
-            while (idx < sortedJobs.length && sortedJobs[idx][1] <= t) {
+        int idx = 0;
+        while (idx < jobs.length || !pq.isEmpty()) {
+            while (idx < jobs.length && jobs[idx][0] <= t) {
                 // System.out.printf("%d offered\n", idx);
-                pq.offer(sortedJobs[idx]);
+                pq.offer(new int[] {idx, jobs[idx][0], jobs[idx][1]});
                 idx++;
             }
-            // System.out.printf("idx %d\n", idx);
-            //지금시간 + 얘의 소요시간 - 요청시각구해서 전체에 더한다.
-            // if (pq.isEmpty()) break;
-            // System.out.printf("%d %d %d polled\n", pq.peek()[0], pq.peek()[1], pq.peek()[2]);
+            // System.out.printf("===polling===\n");
             if (pq.isEmpty()) {
-                t = sortedJobs[idx][1];
-            }else {
-                int[] polled = pq.poll();
-                t += polled[2];
-                // System.out.printf("%d added\n", t - polled[1]);
-                sum += (t - polled[1]);
-                done++;    
+                t = jobs[idx][0];
+            } else {
+            int[] polled = pq.poll();
+            int duration = polled[2];
+            int wait = t + duration - polled[1];
+            // System.out.printf("(%d, %d ,%d) polled\n", polled[0],polled[1],polled[2]);
+            // System.out.printf("waited = %d\n", wait);
+            ans += wait;
+            t += duration;
+            // System.out.printf("t = %d\n", t);
             }
-            
         }
-        return sum / sortedJobs.length;
-    
+        return ans / jobs.length;
         
     }
 }
 /**
-jobs가 정렬안한상태로 들어옴..
-그러면 이제 시간순으로 정렬을한다치면서 idx로 추적
-시간가지고 시뮬레이션돌리면서(왜냐하면 대기시간을 구해야하니까)
+작업들이있다. 우선순위대로 해결해라. 우선순위: 소요시간, 요청시각, 작업번호
+jobs[i] : i작업번호, (요청시각, 소요시간)
 */
