@@ -1,82 +1,66 @@
+import java.util.*;
 class Solution {
-    int[] info;
-    int best = 0; //최고점수
-    int[] res;
+    int[] ans = {-1};
+    int max = -1;
     public int[] solution(int n, int[] info) {
-        this.info = info;
-        res = new int[11];//res[0] 은 10점 갯수..... res[10]은 0점갯수.d
-        backtrack(new int[11], 0, n);
-        return best == 0 ? new int[] {-1} : res;
+        backtrack(n, new int[info.length], 0, info);
+        return ans;
     }
-    public void backtrack(int[] current, int idx, int left) {
-        if (idx == info.length || left == 0) {
-            //남은 화살 0점에 다 떄려박고 계산
-            // System.out.printf("========\n");
-            for (int i = 0; i < left; i++) current[10]++;
-            //current랑 info가지고 점수계산..하고 이겼는지 점수차이랑 갱신까지
-            for (int i = 0; i < current.length; i++) {
-                // System.out.printf("%d점 %d개\n", 10-i, current[i]);
-            }
-            calculate(current);
-            for (int i = 0; i < left; i++) current[10]--;
+    public void backtrack(int arrows, int[] current, int idx, int[] info) {
+        if (idx == info.length) {
+            finalize(arrows, current, info);   
             return;
         }
-        //current[idx]에 0개부터 n개까지 넣기d
-        for (int i = 0; i <= left; i++) {
-            current[idx] = i;
-            backtrack(current, idx + 1, left - i);
-            current[idx] = 0;
+        current[idx] = 0;//안쏨
+        backtrack(arrows, current, idx + 1, info);
+        if (arrows > info[idx]) { //어피치가 쏜거보다 1개 더쏠것. 근데 남아야함d
+            current[idx] = info[idx] + 1;
+            backtrack(arrows - current[idx], current, idx + 1, info);
+            //되돌릴거는..없는듯?어차피 안쏘는건해가지고 피해볼것이없다.
         }
+        return;
     }
-    public void calculate(int[] current) {
+    public void finalize(int arrows, int[] current, int[] info) {//계산, 나머지 다 정리, 갱신..
+        //남은 화살 다 때려박기 0점에
+        for (int i = 0; i < arrows; i++) {
+            current[10]++;
+        }
         int apeach = 0;
         int lion = 0;
-        for (int i = 0; i < current.length; i++) {
-            //둘다0이면 패스
-            if (current[i] == 0 && info[i] == 0) continue;
-            
-            if (current[i] > info[i]) {
-                lion += (10 - i);
-            }else {
-                apeach += (10 - i);
-            }
+        for (int i = 0; i < info.length; i++) {
+            if (info[i] == 0 && info[i] == current[i]) continue;
+            if (current[i] > info[i]) lion += (10 - i);
+            else apeach += (10 - i);
         }
-        
-        if (apeach >= lion) return; //점수 더낮음 패스
-        
-        if(lion - apeach > best) { //점수갱신
-            res = current.clone();
-            best = lion - apeach;
-        }else if(lion - apeach == best){ //점수차 동일
+        int diff = lion - apeach;
+        if (diff <= 0) return;
+        if (diff > max) {
+            max = diff;
+            ans = Arrays.copyOf(current, current.length);
+            return;
+        }
+        if (diff == max) {
             for (int i = 10; i >= 0; i--) {
-                if (current[i] == res[i]) continue;
-                
-                if (current[i] > res[i]) res = current.clone();
-                else {
-                    break; //이건 갱신안함
+                if (ans[i] == current[i]) continue;
+                else if (ans[i] > current[i]) {
+                    return;
+                }else {
+                    max = diff;
+                    ans = Arrays.copyOf(current, current.length);
+                    return;
                 }
             }
         }
     }
 }
 /**
-어피치 어드밴티지: 1
-    점수에대해 화살갯수 동일 -> 어피치 점수 
-    최종점수 도잉ㄹ -> 어피치 승
-    
-라이언입장에서 n발을 잘 맞추ㅕ서 최대한 이득을 봐야한다..
-그러면 뭐 그리디 dp 완탐 등이있을거같은데 조건
-n 10이면.. 
+n발쏜다
+info->어피치가 맞춘 점수판. (점수,갯수)
 
-아무튼 이기는 경우의수(과녁판 결과)를 배열로 만들어서 return
-점수차이가 가장 큰 경우를 return한다.점수차이가 동일하다면 낮은점수를 더 많이맞춘거..흠<< 이거 머지
+완탐하면된다.
+    쏜다: 어피치 + 1
+    안쏜다: 0
 
-자 경우의수 게싼법으로 돌아와서
-가성비로 따진다면(기댓값 한발당) 안되는 반레는.. 발당 가격이지 이게 딱떨어지는게 아니라그럼
-소숫점 계산을 안해줘서 그럼.
+다쏴야하니까 마지막에 점수집계
 
-그러면 그냥 완탐떄리는게 나음
-
-10개의 칸에다가 n발을 어떻게 나눌지하는거임.. 그래서 배열을 들고다니고
-마지막에 10발 다 채워넣고 점수계산..갱신.
 */
