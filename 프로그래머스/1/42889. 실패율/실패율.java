@@ -1,37 +1,37 @@
 import java.util.*;
 class Solution {
     public int[] solution(int N, int[] stages) {
-        double[] stageInfo = new double[N + 1];
-        int tmp = stages.length;
+        double[] failRate = new double[N + 1 + 1]; //stageN까지.
+        //먼저 stages에서 각 스테이지정보에 적어야함
+        int[] count = new int[N + 1 + 1];
+        for (int s : stages) count[s]++;
+        //이제 stage별로 순회
+        int total = stages.length;
         for (int i = 1; i <= N; i++) {
-            int cnt = 0;
-            for (int s : stages) { //i인애 카운트하는거임
-                if (s == i) cnt++;
-            }
-            // System.out.printf("stage %d, cnt %d, total %d\n", i, cnt, tmp);
-            if (tmp == 0) break;
-            stageInfo[i] = (double)cnt / tmp; //해당스테이지에서 멈춘 사람수 찾기가능
-            // System.out.printf("stage%d %2f\n", i, stageInfo[i]);
-            tmp -= cnt;
+            if (total == 0) break;
+            failRate[i] = (double) count[i] / total;
+            total -= count[i];
         }
-        //전체분모 n인데 점점 줄고가고.. 오케이 그러면 만들수있음 실패율을.
-        //근데 어떻게 이거랑 stage랑 연결하냐 이거지.. 정렬할건데..Integer가지고했던게 기억이나는데 왜 Integer은 되고..
+        // for (double f : failRate) System.out.println(f);
+        //이제 failRate[i]의 크기를 기준으로 i를 출력하면된다..
+        //이게무슨말이냐 하면 failRate의 값을기준으로 그 인덱스로 정렬하는건데..
+        //연결지점이 필요한거고..이거를 어케하냐 이거지. 아 이거는 음 클래스로하든가
+        //아니면 뭐 Integer정렬이런게 있던거같은데..
         Integer[] ans = new Integer[N];
-        for (int i = 0; i < N; i++) ans[i] = i + 1;
+        for (int i = 0; i <  N; i++) ans[i] = i + 1;
         Arrays.sort(ans, (o1, o2) -> {
-            if (Double.compare(stageInfo[o2], stageInfo[o1]) == 0) {
-                return o1 - o2;
-            }
-            else return Double.compare(stageInfo[o2], stageInfo[o1]);
+            if (Double.compare(failRate[o2], failRate[o1]) == 0) return o1 - o2;
+            return Double.compare(failRate[o2], failRate[o1]);
         });
+        
         return Arrays.stream(ans).mapToInt(i->i).toArray();
     }
 }
 /**
-이거를 브루트포스로 하려면
-stages를 순회를 하면서 스테이지배열에 이제 기입을 하는거지
-근데 이거를 매 스테이지마다 한다치면 500 * 200,000니까 100 000 000 어딱인디
-근데 수학적으로 단축도 될거같은데
-예를 들면 음..N까지 배열(스테이지정보) 만들어놓고
-1스테이지까지 간 애들 ..2스테이지 카운트 하고나면 되는거잖음
+실패율에 따라서 스테이지번호를 리턴
+스테이지갯수 500
+유저 200,000명.(stages는 유저가 도전중인 스테이지번호) stages[i] 1-N+1
+결국 실패율이 담긴 배열이 있어야하고 그거 정렬하면된다.연결지점이있을테고
+
+
 */
