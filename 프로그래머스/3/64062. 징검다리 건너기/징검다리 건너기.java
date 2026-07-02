@@ -1,36 +1,38 @@
 class Solution {
     public int solution(int[] stones, int k) {
-        long l = 0;
-        long r = Long.MAX_VALUE;
-        long ans = 0;
+        int l = 0;
+        int r = 200000000;
+        int ans = 0;
         while (l <= r) {
-            long m = (l + r) / 2;
-            // System.out.printf("===%d===\n", m);
-            //m명 가능했다고 가정해서 다 깎아버린다음에..예를들어 m이 20임.
-            //그러면 20명 지나가면 20깎여있을거고.. 그 상태에서 가능하면 m+1명가능으로 메모지.
-            //암튼 m숫자깎고 m+1명 가정으로하는것. for로 stones깎인거돌고 최대거리찾아서k이상이면 불가 이하면 가능
-            //지금 하고자 하는것: 최대거리구하기.
-            int prev = -1;
-            int max = -1;
+            int m = (l + r) / 2;
+            //m명이 건넜다고  치자. 그러면 각 s - m을할테고 원래4였는데 3명지나면 1남아야지
+            //원래3인데 3지나면 0일테고..뛰어넘기가능이겠지. 근데 m지났다치고 한명이 더 뛰는데
+            //뛰어넘는게 k칸이하? 더 가능 그러면 m+1로 갱신
+            // System.out.printf("===m : %d===\n", m);
+            int prev = -1;// 이전인덱스
+            int maxJump = 0;
             for (int i = 0; i < stones.length; i++) {
-                if (stones[i] - m < 0) {
-                }else {
-                    max = Math.max(max, i - prev);
-                    // System.out.printf("i, prev, max: %d %d %d\n",i,prev,max);
-                    prev = i;//밟음
+                if (stones[i] - m > 0) {
+                    //건널수있음
+                    // System.out.printf("(%d) possible, prev : %d\n", i, i);
+                    maxJump = Math.max(i - prev, maxJump);
+                    prev = i;
+                }else { //못건넘.
+                    // System.out.printf("(%d) impossible, max: %d\n", i, maxJump);
                 }
             }
-            max = Math.max(max, stones.length - prev);
-            // System.out.printf("max %d\n", max);
-            if (max != -1 && max <= k) {
-                // System.out.printf("%d success %d renew\n", m, m + 1);
-                ans = m;
+            maxJump = Math.max(stones.length - prev, maxJump);
+            // System.out.printf("final max %d\n", maxJump);
+            if (maxJump <= k) {
+                ans = m + 1;
                 l = m + 1;
             }else {
                 r = m - 1;
             }
         }
-        return (int)ans;
+        return ans;
     }
 }
-        //2억명도 가능하니까 시뮬레이션돌리ㅕ면 터짐. 이분탐색
+/**
+이분탐색
+*/
