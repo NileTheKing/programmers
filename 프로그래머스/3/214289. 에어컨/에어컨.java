@@ -2,56 +2,57 @@ import java.util.*;
 class Solution {
     public int solution(int temperature, int t1, int t2, int a, int b, int[] onboard) {
         int OFFSET = 10;
-        int minuteLength = onboard.length;
-        int[][] dp = new int[onboard.length][51];// 시간축 온도축. 
-        //그냥 깔끔하게 머리아프니까 다 추가해버리는거임.. -10이면 0이라읽는다
         temperature += OFFSET;
         t1 += OFFSET;
         t2 += OFFSET;
-        int INF = Integer.MAX_VALUE / 2;//오버플로우방지
+        int[][] dp = new int[onboard.length][51];
+        int INF = Integer.MAX_VALUE / 2;
         for (int[] d : dp) Arrays.fill(d, INF);
-        dp[0][temperature] = 0;//0일떄 나머진 불가
-        for (int i = 1; i < dp.length; i++) {//시간축
-            System.out.println();
-            for (int j = 0; j <= 50; j++) {//온도축
-                // 이건 계산할필요가없음 애초에불가능.사람타있는데 이온도를 왜 계산해.
-                if (onboard[i] == 1 && (j < t1 || j > t2)) continue;
-                //경우의수 고려해서 제일 작은값.(전시간대비 온도가)
-                //유지
-                int stay = INF;
-                    //실내==실외 (자연)
-                int stayNatural = j == temperature ? dp[i - 1][j] : INF;
-                    //희망온도==실내온도 (에어컨)
-                int stayAC = dp[i - 1][j] + b; //유지비용만
-                stay = Math.min(stayNatural, stayAC);
-                //상승
-                int up = INF;
-                    //자연상승 실내 < 실외..그니까 j - 1에서 temp
-                int upNatural = j - 1 >= 0 && j - 1 < temperature ? dp[i - 1][j - 1] : INF;
-                    //에어컨으로 상승..
-                int upAC = j - 1 >= 0 ? dp[i - 1][j - 1] + a : INF;
-                up = Math.min(upNatural, upAC);
-                //하락
-                int down = INF;
-                    //자연하락 실내 > 실외
-                int downNatural = j + 1 <= 50 && j + 1 > temperature ? dp[i - 1][j + 1] : INF;
-                    //에어컨으로 하락
-                int downAC = j + 1 <= 50 ? dp[i - 1][j  + 1] + a : INF;
-                down = Math.min(downNatural, downAC);
-                int res = Math.min(Math.min(stay,up), down);
-                dp[i][j] = res;
-                // System.out.printf("(%d, %d):  %d\n",i,j,dp[i][j]);
+        dp[0][temperature] = 0;
+        // System.out.printf("dp[0][%d] = %d\n", temperature, dp[0][temperature]);
+        for (int t = 1; t < onboard.length; t++) {
+            // System.out.printf("===t:%d===\n", t);
+            for (int j = 0; j < 51; j++) {
+                //onboard인데 조건밖이 여기는 애초에 불가능하니까 뒤에도계산하면ㄷ안됨
+                if (onboard[t] == 1 && (j < t1 || j > t2)) {
+                    //System.out.printf("at %d skipping\n", j);
+                    dp[t][j] = INF;
+                    continue;
+                }
+                //System.out.printf("===temperature j = %d===\n", j);
+                //이제 현재값을 이전상태에서 빌려와서 계산한다.
+                //경우의수 1. 이전온도유지 2.온도 상승 3.온도하락
+                //1-1 에어컨 켜서 유지
+                //1-2 자연 유지(에어컨X)
+                int sameOn = dp[t - 1][j] + b;
+                int sameOff = j != temperature ? INF : dp[t-1][j];
+                if (t == 1 && j == 38) {
+                    // System.out.printf("tem: %d,,debug: %d %d\n", temperature, sameOn, sameOff);
+                }
+                int resSame = Math.min(sameOn, sameOff);
+                //2-1 에어컨으로 온도 상승
+                //2-2 자연상성
+                int upOn = j == 0 ? INF : dp[t - 1][j - 1] + a;
+                int upOff = j != 0 && j - 1 < temperature ? dp[t - 1][j - 1] : INF;
+                int resUp = Math.min(upOn, upOff);
+                
+                //3-1 에어컨으로 온도하락
+                //3-2 자연하락
+                int downOn = j == 50 ? INF : dp[t - 1][j + 1] + a;
+                int downOff = j != 50 && j + 1 > temperature ? dp[t - 1][j + 1] : INF;
+                int resDown = Math.min(downOn, downOff);
+                dp[t][j] = Math.min(resSame, Math.min(resUp, resDown));
+                // System.out.printf("among %d %d %d\n", resSame, resDown, resUp);
+                // System.out.printf("dp[%d][%d] = %d\n", t, j, dp[t][j]);
+                System.out.println();
             }
         }
         // for (int[] d : dp) System.out.println(Arrays.toString(d));
-        return Arrays.stream(dp[minuteLength - 1]).min().getAsInt();
+        
+        return Arrays.stream(dp[onboard.length - 1]).min().getAsInt();
     }
 }
 /**
-에어컨을 희망온도로 킨다. 다르다면 희망온도쪽으로 이동
-만약 희망온도가 실내온도랑 같다면 안변하지 당연
-
-만약 에어컨을 끄면 실내가 실외쪽으로 이동.. 만약 실내가 실외랑ㄱ 같다면 변하진않느다
-
-소비전력.. 켰을떄지. 희망!=실내 -> a, 희망 == 실내 -> b만큼소비.온도변화X
+시간축 행
+온도축. 열
 */
