@@ -1,8 +1,8 @@
 import java.util.*;
 class Solution {
-    int[][] directions = {{1,0},{-1,0},{0,1},{0,-1}};
+    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
     public int solution(int[][] rectangle, int characterX, int characterY, int itemX, int itemY) {
-    
+        //2배
         for (int[] rec : rectangle) {
             rec[0] *= 2;
             rec[1] *= 2;
@@ -13,88 +13,70 @@ class Solution {
         characterY *= 2;
         itemX *= 2;
         itemY *= 2;
-        int m, n;
-        m = 101;
-        n = 101;
-        Queue<int[]> q = new LinkedList<>();
-        boolean[][] visited = new boolean[m][n];
-        q.offer(new int[] {characterX, characterY});
+        //bfs
+        boolean[][] visited = new boolean[102][102];
         visited[characterX][characterY] = true;
-        
-        int cnt = -1;
-        while(!q.isEmpty()) {
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[] {characterX, characterY});
+        int step = 0;
+        while (!q.isEmpty()) {
+            step++;
+            // System.out.printf("===step%d====\n", step);
             int size = q.size();
-            cnt++;
             for (int i = 0; i < size; i++) {
                 int[] polled = q.poll();
-                //System.out.printf("(%d, %d)\n", polled[0], polled[1]);
+                // System.out.printf("(%d, %d) poleld\n", polled[0], polled[1]);
                 for (int[] d : directions) {
-                    int nx = d[0] + polled[0];
-                    int ny = d[1] + polled[1];
-                    //System.out.printf("new (%d, %d)\n", nx, ny);
-                    //경계
-                    if (!inRange(m,n,nx,ny)) {
-                        //System.out.printf("range fail\n");
-                        continue;}
-                    //방문
-                    if (visited[nx][ny]) {
-                        //System.out.printf("visited fail\n");
-                        continue;}
-                    //한사각형의 테두리위
-                    if (!isEdge(rectangle, nx, ny)) {
-                        //System.out.printf("not on edge fail\n");
-                        continue;}
-                    //다른 사각형의 내부가 아님
-                    if (isIncluded(rectangle, nx, ny)) {
-                        //System.out.printf("included fail\n");
-                        continue;}
+                    int nr = polled[0] + d[0];
+                    int nc = polled[1] + d[1];
                     
-                    if (nx ==itemX && ny == itemY) return (cnt + 1)/2;
-                    visited[nx][ny] = true;
-                    q.offer(new int[] {nx, ny});
+                    //bound
+                    if (nr < 0 || nr >= 102 || nc < 0 || nc >= 102) continue;
+                    //visit
+                    if (visited[nr][nc]) continue;
+                    //not online
+                    if (notOnline(rectangle, nr, nc)) continue;
+                    //inside
+                    if (inside(rectangle, nr, nc)) continue;
+                    //END
+                    if (nr == itemX && nc == itemY) return step / 2;//2배확장한 판에서 1칸씩 움직였으므로
+                    visited[nr][nc] = true;
+                    q.offer(new int[] {nr, nc});
                 }
             }
         }
         return -1;
-        
+            
     }
-    public boolean inRange(int m, int n, int x, int y) {
-        if (x < 0 || x >= m || y < 0 || y >= n) return false;
+    public boolean notOnline(int[][] rectangle, int r, int c) {
+        //지금 좌표가..모서리여야한다. 모서리 위에있으려면 4개 사각형 중 각 선분4개중 하나위에있으면된다..16개중에 하나에만 올라가있어도 된다.
+        for (int[] rec : rectangle) {
+            int x1 = rec[0];
+            int y1 = rec[1];
+            int x2 = rec[2];
+            int y2 = rec[3];
+            //r,c가  4개 선분중에 하나
+            //아래 ㅡ 라는건.., x범위는 x1 x2 y =y1
+            if (r >= x1 && r <= x2 && c == y1) return false;
+            //위 ㅡ x범위 [x1, x2] , y = y2
+            if (r >= x1 && r <= x2 && c == y2) return false;
+            //왼쪽 ㅣ x = x1, y범위 [y1, y2]
+            if (r == x1 && c  >= y1 && c  <= y2) return false;
+            //오른쪾 ㅣ x = x2, y범위 [y1,y3]
+            if (r == x2 && c  >= y1 && c  <= y2) return false;
+        }
         return true;
     }
-    //한 사각형의 변인ㅇ가
-    public boolean isEdge(int[][] rectangle, int x, int y) {
-        //사각형은 변이4개..그중하나라도 거치면됨 심지어 한 사각형에만 되면 된다
+    public boolean inside(int[][] rectangle, int r, int c) {
+        //안에있다라는건..4개중에 하나에 안에만 있어도 안된다.
         for (int[] rec : rectangle) {
-            //사각형 두 점을 기준으로
-            //ㅡ 2개 -> r가 일치
-                //윗변에 일치
-            if (y == rec[3] && x >= rec[0] && x <= rec[2]) return true;
-            if (y == rec[1] && x >= rec[0] && x <= rec[2]) return true;
-            //ㅣ 2개 -> c가일치
-            if (x == rec[0] && y >= rec[1] && y <= rec[3]) return true;
-            if (x == rec[2] && y >= rec[1] && y <= rec[3]) return true;
+            int x1 = rec[0];
+            int y1 = rec[1];
+            int x2 = rec[2];
+            int y2 = rec[3];
+            if (r > x1 && r < x2 && c > y1 && c < y2) return true;
         }
-        return false;
-    }
-    //다른 사각형에 포함되지 않는가
-    public boolean isIncluded(int[][] rectangle, int x, int y) {
-        for (int[] rec : rectangle) {
-            //해당 사각형에 대해..(x,y)가 포함되는조건은..
-            if (x > rec[0] && x < rec[2] && y > rec[1] && y < rec[3]) return true;
-        }
+        
         return false;
     }
 }
-/**
-라인타고 움직여야함
-그니까 다음위치는 상하좌우 4방향중에
-조건에 맞는위치
-    조건: 가장바깥쪽선을 탈 수 있음.
-    그렇다는거는 상하좌우 후보에서 각 후보는 바깥쪽에있어야한다.
-        바깥쪽에 있으려면 
-        1. 바운드안
-        2. 테두리위
-        3. 다른 사각형의 내부이면 안됨.어느 한 사각형이라도 내부면 불가능.
-        이게 아니라면 테두리가 맞다.
-*/
