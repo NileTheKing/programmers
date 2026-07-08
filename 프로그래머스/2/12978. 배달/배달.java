@@ -1,42 +1,47 @@
 import java.util.*;
 class Solution {
-    int[] dist;
     public int solution(int N, int[][] road, int K) {
-        Map<Integer, List<int[]>> map = new HashMap<>();
-        dist = new int[N + 1];// dist[n] = n노드까지 최단거리
+        List<List<int[]>> graph = new ArrayList<>();
+        for (int i = 0; i <= N; i++) graph.add(new ArrayList<>());
+        for (int[] r : road) {
+            int v1 = r[0];
+            int v2 = r[1];
+            int weight = r[2];
+            graph.get(v1).add(new int[] {v2, weight});
+            graph.get(v2).add(new int[] {v1, weight});
+        }
+        int[] dist = new int[N + 1];
         Arrays.fill(dist, Integer.MAX_VALUE);
         dist[1] = 0;
-        //그래프그리기 3,[1,2] -> 3마을은1마을이랑연결 시간2
-        for (int[] r : road) {
-            map.computeIfAbsent(r[0], k -> new ArrayList<>()).add(new int[] {r[1],r[2]});
-            map.computeIfAbsent(r[1], k -> new ArrayList<>()).add(new int[] {r[0],r[2]});
-        }
-        //1번마을에서 다른 마을들 순회하면서 K미만으로 갈 수 있는 곳은 카운트.
-        //이 파트가 문제임. 어떤 방법을 사용할 수 있을까?..
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[1] - b[1]);//오름차순..{노드,거리}
-        pq.offer(new int[] {1,0});
-        while (!pq.isEmpty()) {
-            int[] polled = pq.poll();
-            for (int[] nei : map.get(polled[0])) {
-                //방문할지말지. 기존보다 나아야만 방문해줌
-                if (polled[1] + nei[1] < dist[nei[0]]) {
-                    dist[nei[0]] = polled[1]+ nei[1];
-                    pq.offer(new int[] {nei[0], dist[nei[0]]});
-                }
+        Queue<Integer> q = new LinkedList<>();
+        q.offer(1); //초기
+        while (!q.isEmpty()) {
+            int polled = q.poll();
+            List<int[]> neis = graph.get(polled);
+            for (int[] nei : neis) {
+                int v = nei[0];
+                int w = nei[1];
+                if (dist[v] < dist[polled] + w) continue;//이미 더 좋은경로가있따
+                q.offer(v);
+                dist[v] = dist[polled] + w;
             }
         }
-        
         int cnt = 0;
         for (int i = 1; i <= N; i++) {
             if (dist[i] <= K) {
-                //System.out.printf("%d\n", i);
-                cnt++;}
+                // System.out.printf("house: %d, time: %d\n", i, dist[i]);
+                cnt++;
+            }
         }
         return cnt;
-        
     }
 }
 /**
-간선 2000개
-노드 50개
+최단거리를 업데이트해야한다 .. 기준점하나 -> 다익스트라
+다익스트라 어케하냐? 까먹음
+하지만 논리적으로 생각해보면
+1. 출발해서 q에 넣는다
+2. 꺼내가지고 ,.. 출발점기준 현재거리까지 한 기록한게있는데..이거보다 작으면 업데이트하고 또 넣어
+
+dist[]배열이있고
 */
