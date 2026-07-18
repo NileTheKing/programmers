@@ -2,32 +2,36 @@ import java.util.*;
 class Solution {
     int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
     public int solution(int[][] maps) {
+        Queue<int[]> q = new LinkedList<>();
         int m = maps.length;
         int n = maps[0].length;
-        
-        boolean[][] visited = new boolean[m][n];
-        Queue<int[]> q = new LinkedList<>();
-        visited[0][0] = true;
+        //visited는 maps로 대신
         q.offer(new int[] {0,0});
-        int step = 1;
+        int steps = 1;
+        maps[0][0] = 2;
         while (!q.isEmpty()) {
-            step++;
             int size = q.size();
+            steps++;
             for (int i = 0; i < size; i++) {
                 int[] polled = q.poll();
+                // System.out.printf("at (%d %d)\n", polled[0], polled[1]);
                 for (int[] d : directions) {
-                    int nr = polled[0] + d[0];
-                    int nc = polled[1] + d[1];
+                    int nr = d[0] + polled[0];
+                    int nc = d[1] + polled[1];
+                    // System.out.printf("(%d,%d)check\n", nr,nc);
+                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) {
+                        // System.out.printf("out of bound\n");
+                        continue;
+                    }
+                    // System.out.printf("passsed 1\n");
+                    if (maps[nr][nc] != 1) continue;
+                    // System.out.printf("passsed 2\n");
+                    if (nr == m - 1 && nc  == n - 1) return steps;
+                    // System.out.printf("passsed 3\n");
                     
-                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;//bound
-                    if (visited[nr][nc]) continue;//visited
-                    //wall
-                    if (maps[nr][nc] == 0) continue;
-                    
-                    //return
-                    if (nr == m - 1 && nc == n - 1) return step;
+                    // System.out.printf("checking %d %d\n", nr, nc);
                     q.offer(new int[] {nr, nc});
-                    visited[nr][nc] = true;
+                    maps[nr][nc] = 2;
                 }
             }
         }
