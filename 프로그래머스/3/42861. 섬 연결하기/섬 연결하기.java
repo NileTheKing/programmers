@@ -2,44 +2,34 @@ import java.util.*;
 class Solution {
     public int solution(int n, int[][] costs) {
         List<List<int[]>> graph = new ArrayList<>();
-        boolean[] visited = new boolean[n];
-        for (int i = 0; i < n; i++) {
-            graph.add(new ArrayList<>());
+        for (int i = 0; i < n; i++) graph.add(new ArrayList<>());
+        for (int[] c : costs) {
+            int v1 = c[0];
+            int v2 = c[1];
+            int price = c[2];
+            graph.get(v1).add(new int[] {v2, price});
+            graph.get(v2).add(new int[] {v1, price});
         }
-        
-        //그래프 정보 추가
-        for (int[] cost : costs) {
-            int v1 = cost[0];
-            int v2 = cost[1];
-            int expense = cost[2];
-         
-            graph.get(v1)
-                .add(new int[] {v2, expense});
-            graph.get(v2)
-                .add(new int[] {v1, expense});
-        }
-        
-        //프림으로 구하기
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);
+        boolean[] visited = new boolean[n + 1];
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> {
+            return a[1] - b[1];
+        });// [목적지, 가격]
+        pq.offer(new int[] {0,0});
+        int ans = 0;
         int cnt = 0;
-        pq.add(new int[] {0, 0});
-        int charge = 0;
-        while (!pq.isEmpty()) {
-            //제일 싼 거 골라서 연결
-            int[] bridge = pq.poll();
-            int current = bridge[0];
-            if (visited[current]) continue;// 이미 연결했으면 패스
-            visited[current] = true;
-            charge += bridge[1];
-            //다음 후보들 pq에 넣음
-            for (int[] connected : graph.get(current)) {
-                pq.offer(connected);
+        while (!pq.isEmpty() && cnt < n) {
+            int[] polled = pq.poll();
+            if (visited[polled[0]]) continue;
+            visited[polled[0]] = true;
+            cnt++;
+            ans += polled[1];
+            for (int[] nei : graph.get(polled[0])) {
+                int nextNode = nei[0];
+                // if (visited[nextNode]) continue;
+                pq.offer(new int[] {nextNode, nei[1]});
+                // visited[nextNode] = true;
             }
-            
         }
-        return charge;
+        return ans;
     }
 }
-/**
-그래프 만들어놓고 하나씩 순회
-*/
