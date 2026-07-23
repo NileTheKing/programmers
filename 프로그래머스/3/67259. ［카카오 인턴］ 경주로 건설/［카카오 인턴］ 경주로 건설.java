@@ -1,66 +1,100 @@
 import java.util.*;
 class Solution {
+    int[][] directions = {{-1,0},{0,1},{1,0},{0,-1}};//0 2 수직 13수평
+    int m, n;
     public int solution(int[][] board) {
-        int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
-        PriorityQueue<Info> pq = new PriorityQueue<>(
-            (o1, o2) -> o1.price - o2.price
-        );
-        int m = board.length;
-        int[][][] dist = new int[m][m][2];//[][][1]은 수직
+        this.m = board.length;
+        this.n = board[0].length;
+        int[][][] visited = new int[m][n][2]; //[][][이놈은수직수평] 1수직0수평
+        Queue<Info> q = new LinkedList<>();
+        q.offer(new Info(0,0,-1, 0));
         for (int i = 0; i < m; i++) {
-            for (int j = 0; j < m; j++) {
-                Arrays.fill(dist[i][j], Integer.MAX_VALUE);
+            for (int j = 0; j < n; j++) {
+                visited[i][j][0] = Integer.MAX_VALUE;
+                visited[i][j][1] = Integer.MAX_VALUE;
             }
         }
-        dist[0][0][0] = 0;
-        dist[0][0][1] = 0;
-        pq.offer(new Info(0,0,-1,0));
-        while (!pq.isEmpty()) {
-            Info polled = pq.poll();
-            if (polled.prev != -1 && dist[polled.r][polled.c][polled.prev] < polled.price) continue;
-            //System.out.printf("(%d, %d) at %d \n", polled.r, polled.c, polled.price);
-            if (polled.r == m -1 && polled.c == m - 1) return polled.price;
-            for (int[] d : directions) {
-                int nr = polled.r + d[0];
-                int nc = polled.c + d[1];
-                boolean sameDirection = (polled.prev == -1) 
-                    || (d[0] == 0 && polled.prev == 0) ||
-                    (d[0] != 0 && polled.prev == 1);
-                int nPrice = sameDirection ? polled.price + 100 : polled.price + 600;
-                int going = d[0] != 0 ? 1 : 0;
-                //bound
-                if (nr < 0 || nr >= m || nc < 0 || nc >= m) continue;
-                //막힌길
+        visited[0][0][0] = 0;
+        visited[0][0][1] = 0;
+        int min = Integer.MAX_VALUE;
+        while (!q.isEmpty()) {
+            Info polled = q.poll();
+            // System.out.printf("at (%d,%d), moved dir:%d, price:%d\n", polled.r, polled.c, polled.prevDirIdx, polled.price);
+            for (int i = 0; i < directions.length; i++) {
+                // System.out.printf("directions: %d\n", i);
+                int nr = polled.r + directions[i][0];
+                int nc = polled.c + directions[i][1];
+                //boundcheck
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n) {
+                    // System.out.printf("bound\n");
+                    continue;
+                }
                 if (board[nr][nc] == 1) continue;
-                //방문했음.근데 그게 더 나음
-                if (dist[nr][nc][going] < nPrice) continue;
-                dist[nr][nc][going] = nPrice;
-                pq.offer(new Info(nr,nc,going,nPrice));
-                
+                if (i % 2 == 1) {//지금 수평으로 이동중
+                    // System.out.printf("moving horizontally\n");
+                    //visitedcheck
+                    //이전에 수직이었음(코너)
+                    if (polled.prevDirIdx != - 1 && polled.prevDirIdx % 2 == 0) {
+                        int nprice = polled.price + 600;
+                        if (visited[nr][nc][0] <= nprice) continue;
+                        visited[nr][nc][0] = nprice;
+                        if (nr == m - 1 && nc == n - 1) {
+                            // System.out.printf("found at price %d\n", nprice);
+                            min = Math.min(min, nprice);
+                        }
+                        q.offer(new Info(nr,nc, i, nprice));
+                    }
+                    //이전에 수직이었음(직선)
+                    else {
+                        int nprice =  polled.price + 100;
+                        if (visited[nr][nc][0] <= nprice) continue;
+                        visited[nr][nc][0] = nprice;
+                        if (nr == m - 1 && nc == n - 1) {
+                            // System.out.printf("found at price %d\n", nprice);
+                            min = Math.min(min, nprice);
+                        }
+                        q.offer(new Info(nr,nc, i, nprice));
+                    }
+                }else {
+                    //수직으로 이동중
+                    // System.out.printf("moving vertically\n");
+                    //이전에 수직이었음(직선)
+                    if (polled.prevDirIdx == - 1 || polled.prevDirIdx % 2 == 0) {
+                        int nprice=  polled.price + 100;
+                        if (visited[nr][nc][1] <= nprice) continue;
+                        visited[nr][nc][1] = nprice;
+                        if (nr == m - 1 && nc == n - 1) {
+                            // System.out.printf("found at price %d\n", nprice);
+                            min = Math.min(min, nprice);
+                        }
+                        q.offer(new Info(nr,nc, i, nprice));
+                    }
+                    //이전에 수평이었음
+                    else {
+                        int nprice=  polled.price + 600;
+                        if (visited[nr][nc][1] <= nprice) continue;
+                        visited[nr][nc][1] = nprice;
+                        if (nr == m - 1 && nc == n - 1) {
+                            // System.out.printf("found at price %d\n", nprice);
+                            min = Math.min(min, nprice);
+                        }
+                        q.offer(new Info(nr,nc, i, nprice));
+                    }
+                }
             }
         }
-        return -1;
+        return min;
     }
-    public class Info {
+    class Info {
         int r;
         int c;
-        int prev; //-1,0,1 . 1이 수직 0수평
+        int prevDirIdx;
         int price;
-        Info(int r, int c, int prev, int price) {
+        Info (int r, int c, int prevDirIdx, int price) {
             this.r = r;
             this.c = c;
-            this.prev = prev;
+            this.prevDirIdx = prevDirIdx;
             this.price = price;
         }
     }
 }
-/**
-건설은 비어있어먄 할 수 있따..(이동할수있다)
-이전 이동경로랑 같으면 직선 다르면 코너.
-그러면 q에 상태를 관리. 좌표, 이전(수직or수평), 금액 을 가지고 다닌ㄴ다.
-근데 이거는 다익스트라가 아니지않나 그냥 상ㅇ태관리 bfs아님? 완탐
-
-생각을 해보자
-while
-    size?이거는 레벨별로 하는거잖어.
-*/
