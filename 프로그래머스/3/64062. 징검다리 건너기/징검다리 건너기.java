@@ -1,38 +1,35 @@
+import java.util.*;
 class Solution {
     public int solution(int[] stones, int k) {
         int l = 0;
-        int r = 200000000;
+        int r = 200000001;
         int ans = 0;
         while (l <= r) {
-            int m = (l + r) / 2;
-            //m명이 건넜다고  치자. 그러면 각 s - m을할테고 원래4였는데 3명지나면 1남아야지
-            //원래3인데 3지나면 0일테고..뛰어넘기가능이겠지. 근데 m지났다치고 한명이 더 뛰는데
-            //뛰어넘는게 k칸이하? 더 가능 그러면 m+1로 갱신
-            // System.out.printf("===m : %d===\n", m);
-            int prev = -1;// 이전인덱스
+            int m = (l + r) / 2; //m명이 밟음..성공하면 m명성공
+            // System.out.printf("===trying %d====\n",m);
             int maxJump = 0;
+            int prev = -1;
             for (int i = 0; i < stones.length; i++) {
-                if (stones[i] - m > 0) {
-                    //건널수있음
-                    // System.out.printf("(%d) possible, prev : %d\n", i, i);
-                    maxJump = Math.max(i - prev, maxJump);
+                // System.out.printf("checking stones[%d] = %d\n", i, stones[i] - m);
+                if (stones[i] - m >= 0) {//밟기가능
                     prev = i;
-                }else { //못건넘.
-                    // System.out.printf("(%d) impossible, max: %d\n", i, maxJump);
+                }else {
+                    //뛰어넘어야함..
+                    maxJump = Math.max(maxJump, i - prev + 1);
                 }
             }
-            maxJump = Math.max(stones.length - prev, maxJump);
-            // System.out.printf("final max %d\n", maxJump);
-            if (maxJump <= k) {
-                ans = m + 1;
-                l = m + 1;
-            }else {
+            //마지막인덱스다음거
+            // System.out.printf("maxJump before last: %d\n", maxJump);
+            if (stones.length - prev < 0) maxJump = Math.max(maxJump, stones.length - prev);
+            // System.out.printf("maxJump after last: %d\n", maxJump);
+            //만약 k보다 크면..너무멀리뜀..너무많이 건넛어
+            if (maxJump > k) {
                 r = m - 1;
+            }else {//가능
+                ans = m;
+                l = m + 1;
             }
         }
         return ans;
     }
 }
-/**
-이분탐색
-*/
