@@ -1,24 +1,19 @@
-import java.util.Arrays;
+import java.util.*;
 class Solution {
     public int solution(int[] people, int limit) {
-        int left = 0;
-        int right = people.length -1;
         Arrays.sort(people);
-        int count  = 0;
-        while(left <= right){
-            if(people[left] + people [right] <= limit){
-                count++;
-                left++;
-                right--;
-            }
-            else{
-                count++;
-                right--;
-            }
+        int l = 0;
+        int cnt = 0;
+        for (int i = people.length - 1; i >= 0; i--) {
+            if (l > i) break;//종료
+    
+            if (l != i && people[l] + people[i] <= limit) 
+                l++;
+            // System.out.printf("%d\n",i);
+            // System.out.printf("i: %d, sum")
+            //이제 l은안태웠지만 다음에 대상으로될거고
+            cnt++;
         }
-        
-        return count;
+        return cnt;
     }
 }
-
-
