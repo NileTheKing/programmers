@@ -6,30 +6,27 @@ class Solution {
         for (int[] c : costs) {
             int v1 = c[0];
             int v2 = c[1];
-            int price = c[2];
-            graph.get(v1).add(new int[] {v2, price});
-            graph.get(v2).add(new int[] {v1, price});
+            int expense = c[2];
+            graph.get(v1).add(new int[] {v2, expense});
+            graph.get(v2).add(new int[] {v1, expense});
         }
-        boolean[] visited = new boolean[n + 1];
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> {
-            return a[1] - b[1];
-        });// [목적지, 가격]
-        pq.offer(new int[] {0,0});
-        int ans = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]);
+        boolean[] visited = new boolean[n+1];
+        pq.offer(new int[] {0, 0});//0에서시작
+        // visited[0] = true;
+        int sum = 0;
         int cnt = 0;
-        while (!pq.isEmpty() && cnt < n) {
+        while (!pq.isEmpty()) {
+            if (cnt >= n) break;
             int[] polled = pq.poll();
             if (visited[polled[0]]) continue;
             visited[polled[0]] = true;
+            sum += polled[1];
             cnt++;
-            ans += polled[1];
             for (int[] nei : graph.get(polled[0])) {
-                int nextNode = nei[0];
-                // if (visited[nextNode]) continue;
-                pq.offer(new int[] {nextNode, nei[1]});
-                // visited[nextNode] = true;
+                pq.offer(new int[] {nei[0], nei[1]});//방문처리는 여기서하면안된다
             }
         }
-        return ans;
+        return sum;
     }
 }

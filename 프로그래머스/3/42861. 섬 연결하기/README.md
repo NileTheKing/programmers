@@ -1,10 +1,10 @@
 # [level 3] 섬 연결하기 - 42861 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/42861?gad_source=1&gad_campaignid=23716289893&gbraid=0AAAAAC_c4nAiTPIyhFiNOcskQFgI3uH_D&gclid=CjwKCAjw1IHTBhAaEiwA4AYNFs0n0b9MXbOfY8h5PAtOUB-QMI1uCYMMSfrFdXWXdIaGtHzpy_ghrBoC2vgQAvD_BwE) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/42861?gad_source=1&gad_campaignid=23716289893&gbraid=0AAAAAC_c4nB9xkiVZFsqw-uD3NZz3N_7g&gclid=Cj0KCQjw94bTBhDQARIsAN3vv0yRNc40Prg2LnUoinqr_tzZlQ-TqjbAmgwFyg6yMadqSRktQy7PFAUaAh5YEALw_wcB) 
 
 ### 성능 요약
 
-메모리: 86.4 MB, 시간: 1.45 ms
+메모리: 84.1 MB, 시간: 1.11 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2026년 07월 22일 18:09:42
+2026년 07월 23일 18:01:24
 
 ### 문제 설명
 
