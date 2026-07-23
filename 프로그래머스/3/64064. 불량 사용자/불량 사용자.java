@@ -1,41 +1,40 @@
 import java.util.*;
 class Solution {
-    Set<Integer> candidates = new HashSet<>();
+    Set<Integer> combinations = new HashSet<>();//비트마스킹으로 user_id인덱스스위치
     String[] user_id;
     String[] banned_id;
     public int solution(String[] user_id, String[] banned_id) {
         this.user_id = user_id;
         this.banned_id = banned_id;
-        backtrack(0, 0);//TODO
-        return candidates.size();
+        backtrack(0, 0, 0);
+        return combinations.size();
     }
-    public void backtrack(int idx, int user_bit) {
-        if (idx >= banned_id.length) { //종료시 경우의스체크.
-            if (candidates.contains(user_bit)) return;
-            candidates.add(user_bit);
+    //banned_id를 idx 증가하면서 탐색하며 user_id가 처리되었는지를 확인
+    //처리안 된 유저에 한해 처리가능하다면(길이동일,*처리) 추가/추가안하기 백트래킹
+    public void backtrack(int currentBit, int banned_id_idx, int bannedBit) {
+        if (banned_id_idx == banned_id.length) {
+            if (bannedBit != ((1 << banned_id.length) - 1)) return;//다안씀
+            combinations.add(currentBit);
             return;
         }
-        //지금 처리중인 banned_id인덱스의 케이스를 user_id에서 풀스캔.
-        String ban = banned_id[idx];
-        Outter : for (int i = 0; i < user_id.length; i++) {
-            //지금 유저 사용한 유저면 패스
-            if ((user_bit & (1 << i)) != 0) continue;
-            //ban이랑 user_id가 *뺴고 똑같아야함
-            //이거를 음.. 그냥 하드코딩하든가 아님 뭐 regex되니ㅏ?근데모름걍하드코딩
-            String user = user_id[i];
-            if (ban.length() != user.length()) continue; //길이안맞음.패스
-            boolean possible = true;
-            for (int j = 0; j < user.length(); j++) {//
-                //같으면 ㅇㅋ 달라도 *이면 ㅇㅋ 아예 다르면 안됨
-                if (ban.charAt(j) == user.charAt(j)) continue;//다음 문자
-                if (ban.charAt(j) == '*') continue;//다음문자
-                if (ban.charAt(j) != user.charAt(j)) { //다르면 다음 유저
-                    continue Outter;
-                }
+        //banned_id_idx에 해당하는 banned_id에 한해서 user_id순회
+        for (int i = 0; i < user_id.length; i++) {
+            if ((currentBit & (1 << i)) != 0) continue;//이미처리된유저(못고름)
+            if (matched(user_id[i], banned_id[banned_id_idx])) {
+                backtrack(currentBit | (1 << i), banned_id_idx + 1, bannedBit | (1 << banned_id_idx));
             }
-            //다 통과했으면 비트마스킹칠해서 보내버려. 백트래킹응ㄴ 필요없다.
-            int next_bit = user_bit | (1 << i);//user i는 켜가지고 상태바꾸기
-            backtrack(idx + 1, next_bit); //기존bit은 안전함.안건들임.
+            //돌릴거없음 바뀐게없으니 다음 for턴에서 다른유저시도해볼거임
+            //근데 아예 안쓰고 넘어가면 말안되는디.. 다써야만가능함..<췤~
         }
+    }
+    public boolean matched(String user, String ban) {
+        if (user.length() != ban.length()) return false;
+        int len = user.length();
+        for (int i = 0; i < len; i++) {
+            if (user.charAt(i) == ban.charAt(i)) continue;
+            if (ban.charAt(i) == '*') continue;
+            return false;
+        }
+        return true;
     }
 }
