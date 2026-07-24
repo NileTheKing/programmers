@@ -1,48 +1,47 @@
 import java.util.*;
 class Solution {
-    List<String> ans = new ArrayList<>();
-    int targetLength = 0;
     Map<String, PriorityQueue<String>> map;
+    List<String> ans;
+    int targetSize;
     public String[] solution(String[][] tickets) {
-        this.targetLength = tickets.length + 1;
         this.map = new HashMap<>();
-        // System.out.printf("targetLength : %d\n", targetLength);
+        this.ans = new ArrayList<>();
+        this.targetSize = tickets.length + 1;
         for (String[] t : tickets) {
             String v1 = t[0];
             String v2 = t[1];
             map.computeIfAbsent(v1, k -> new PriorityQueue<>()).offer(v2);
         }
-        List<String> list = new ArrayList<>();
-        list.add("ICN");
-        backtrack("ICN", list);
+        List<String> path = new ArrayList<>();
+        path.add("ICN");
+        backtrack("ICN", path);
         return ans.toArray(new String[0]);
     }
-    public boolean backtrack(String current, List<String> path) {
-        if (path.size() == targetLength) {
-            // System.out.printf("===reached end===");
-            // for (String p : path) System.out.printf("%s ", p);
-            System.out.println();
+    boolean backtrack(String current, List<String> path) {
+        if (path.size() == targetSize) {
             ans = new ArrayList<>(path);
             return true;
         }
         PriorityQueue<String> original = map.get(current);
-        if (original == null || original.size() == 0) return false;
-        
+        if (original == null || original.isEmpty()) return false;
         PriorityQueue<String> copy = new PriorityQueue<>(original);
+        
         while (!copy.isEmpty()) {
-            String polled = copy.poll();
-            path.add(polled);
-            map.get(current).remove(polled);
-            if (backtrack(polled, path)) return true;
+            //original에서지우고, path추가
+            String c = copy.poll();
+            original.remove(c);
+            path.add(c);
+            //백트래킹
+            if (backtrack(c, path)) return true;
+            //다시추가,path제거
+            original.offer(c);
             path.remove(path.size() - 1);
-            map.get(current).offer(polled);
         }
         return false;
     }
 }
 /**
-그래프 백트래킹
-
-<출발, 도착[]>
-
+1티켓을 모두써서
+2모두방문
+3사전순
 */
