@@ -4,33 +4,23 @@ class Solution {
         Arrays.sort(rocks);
         int l = 0;
         int r = distance;
-        int ans = distance;
+        int ans = r;
         while (l <= r) {
-            // System.out.printf("=======\n");
-            int m = l + (r - l) / 2; //최소거리가 이거야야한다
-            // System.out.printf("m = %d\n",m);
-            int cnt = 0;//제거한갯수..너무 멀면 밟아야하고 아니면 제거가능
+            int m = (l + r) / 2;
+            //n개까지 제거가능.제거를할때는 rock-prev가 m보다 작으면 그 바위는 존재불가
             int prev = 0;
-            for (int ro : rocks) {
-                // System.out.printf("checking %d  ..", ro);
-                if (ro - prev < m) {//너무 가까워.. 제거해야해
-                    cnt++;
-                    // System.out.printf("%d 제거\n", ro);
-                }else {//얜 제거안해도됨
-                    // System.out.println();
-                    prev = ro;
-                }
+            int cnt = 0;//제거한바위
+            for (int roc : rocks) {
+                if (roc - prev < m) cnt++;
+                else prev = roc;
             }
             if (distance - prev < m) cnt++;
-            // System.out.printf("cnt=%d\n", cnt);
-            //제거하고나니까 min이 너무커서.. 제거를 많이해야한다 -> min지키기엔 n이빡세다
-            if (cnt > n) {
-                //너무 빡셌으니까 m줄여야
+            
+            if (cnt > n) {//너무 많이지웠다 -> m이너무 빡빡해서,작아서 
                 r = m - 1;
-            }else {//가능..업데이트
-                // System.out.printf("updating: %d\n", m);
+            }else {
                 ans = m;
-                l = m + 1;//더 도전
+                l = m + 1;
             }
         }
         return ans;
