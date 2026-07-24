@@ -1,64 +1,52 @@
 import java.util.*;
 class Solution {
-    Map<String, Integer> candidates = new HashMap<>();
+    Map<String, Integer> candidates = new HashMap<>();//주문 목록으로 부터 추출한 가능성있는 <조합, 등장횟수>
     public String[] solution(String[] orders, int[] course) {
-    
-        for (String o : orders) {//일단 다 추가
-            //o에서 조합고르기 combinations
-            char[] chararray = o.toCharArray();
-            Arrays.sort(chararray);
-            o = new String(chararray);
-            getCombination(o, 0, new StringBuilder());
-            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
-                // System.out.printf("%s %d\n", entry.getKey(), entry.getValue());
-            // if (entry.getValue() < 2) candidates.remove(entry.getKey());
-            }
-            System.out.println();
-            
+        //메누순회
+        for (String o : orders) {
+            //각메뉴들을 정렬후, 가능성 만들기.
+            char[] tmp = o.toCharArray();
+            Arrays.sort(tmp);
+            String sortedOrder = new String(tmp);
+            // System.out.printf("===Trying %s===\n", sortedOrder);
+            calculateCombo(sortedOrder, new StringBuilder(), 0);//TODO
         }
-        //빈도수처리는 여기서
-        for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
-            // System.out.printf("%s %d\n", entry.getKey(), entry.getValue());
-            // if (entry.getValue() < 2) candidates.remove(entry.getKey());
-        }
-        //이제 다 2이상이니 course갯수길이맞는거만검사
         List<String> ans = new ArrayList<>();
+        // System.out.println("completed candidates");
+        // System.out.println(candidates);
         for (int c : course) {
-            int maxFreq = 0;
+            //candidatse순회하면서 c인거만 추가.
+            //c는 메뉴구성갯수임.
+            // System.out.printf("===코스길이 %d시도중===\n", c);
+            int max = 0;
             for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
                 if (entry.getKey().length() != c) continue;
-                if (entry.getValue() < 2) continue;
-                maxFreq = Math.max(maxFreq, entry.getValue());
+                // ans.add(entry.getKey());
+                max = Math.max(max, entry.getValue());
             }
-            List<String> added = new ArrayList<>();
+            // System.out.printf("최대반복: %d\n", max);
+            if (max < 2) continue;
             for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
-                if (entry.getKey().length() != c) continue;
-                if (entry.getValue() < 2) continue;
-                if (entry.getValue() == maxFreq) added.add(entry.getKey());
+                if (entry.getKey().length() != c || entry.getValue() != max) continue;
+                // System.out.printf("max: %d, menu: %s, frequency: %d\n", max , entry.getKey(),entry.getValue());
+                ans.add(entry.getKey());
             }
-            for (String s : added) ans.add(s);
-            
         }
-        ans.sort((a,b)->a.compareTo(b));
+        ans.sort(null);
         return ans.toArray(new String[0]);
-        
     }
-    void getCombination(String order, int idx, StringBuilder sb) {
-        
-        if (idx >= order.length()) {
-            if(sb.length() >= 2) { //최소 메뉴2개
-                candidates.put(sb.toString(), candidates.getOrDefault(sb.toString(), 0) + 1);
-            }
+    public void calculateCombo(String str, StringBuilder current, int idx) {
+        if (idx == str.length()) {
+            if (current.length() < 2) return;
+            candidates.put(current.toString(), candidates.getOrDefault(current.toString(), 0) + 1);
+            // System.out.printf("candidates: <%s, %d>\n", current.toString(), candidates.get(current.toString()));
             return;
         }
-        //고름
-        sb.append(order.charAt(idx));
-        getCombination(order, idx + 1, sb);
-        //안고름
-        sb.deleteCharAt(sb.length() - 1);
-        getCombination(order, idx + 1, sb);
+    
+        current.append(str.charAt(idx));
+        calculateCombo(str, current, idx + 1);
+        current.deleteCharAt(current.length() - 1);
+        calculateCombo(str, current, idx + 1);
+        return;
     }
 }
-/**
-
-*/
