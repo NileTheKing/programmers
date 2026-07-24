@@ -1,38 +1,37 @@
 import java.util.*;
 class Solution {
-    Set<Integer> visited;
+    Set<Integer> primes = new HashSet<>();
     public int solution(String numbers) {
-        visited = new HashSet<>();
-        backtrack(numbers, 0, new StringBuilder(), new boolean[numbers.length()]);
-        // for 
-        return visited.size();
+        backtrack(numbers, 0, new boolean[numbers.length()], new StringBuilder());
+        // for (int p : primes) System.out.printf("%d ", p);
+        return primes.size();
     }
-    public void backtrack(String numbers, int idx, StringBuilder current, boolean[] used) {
-        
-            if (idx != 0 && isPrime(current)) {
-                visited.add(Integer.parseInt(current.toString()));
-                // System.out.printf("%d added\n", Integer.parseInt(current.toString()));
-            }
-        
-        
+    void backtrack(String numbers, int idx, boolean[] visited, StringBuilder sb) {
+        if (isPrime(sb.toString())) primes.add(Integer.parseInt(sb.toString()));
+        if (idx == numbers.length()) return;
+        //순서고려해야해TODO
+        //visited필요??
         for (int i = 0; i < numbers.length(); i++) {
-            if (used[i]) continue; //이미 쓴 인덱스
-            current.append(numbers.charAt(i));
-            used[i] = true;
-            backtrack(numbers, i + 1, current,used);
-            current.deleteCharAt(current.length() - 1);
-            used[i] = false;
+            if (visited[i]) continue;
+            visited[i] = true;
+            sb.append(numbers.charAt(i));
+            backtrack(numbers, idx + 1, visited, sb);
+            visited[i] = false;
+            sb.deleteCharAt(sb.length() - 1);
+            
         }
     }
-    public boolean isPrime(StringBuilder sb) {
-        int num = Integer.parseInt(sb.toString());
-        if (num == 1 || num == 0) return false;
+    boolean isPrime(String n) {
+        if (n == null) return false;
+        if (n.length() == 0) return false;
+        int num = Integer.parseInt(n);
+        if (num <= 1) return false;
         for (int i = 2; i * i <= num; i++) {
-            if (num % i == 0) {
-                // System.out.printf("%d not prime\n", num);
-                return false;
-            }
+            if (num % i == 0) return false;
         }
         return true;
     }
 }
+/**
+완탐을 조지면서.. set에 관리해서 마지막에 set크기하면될듯
+*/
