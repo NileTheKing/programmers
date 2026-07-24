@@ -2,37 +2,37 @@ class Solution {
     public int solution(int n, int[] cores) {
         if (n <= cores.length) return n;
         int l = 0;
-        int r = 10000 * 50000 / 2;
-        int t = r;
-        //배정 다하는 T를 구함
+        int r = 50000 * 10000 / 2;
+        int t_plus = r;
         while (l <= r) {
             int m = (l + r) / 2;
-            long cnt = cores.length;
-            for (int c : cores) cnt += (m / c);
-            if (cnt >= n) {//배정가능
-                t = m;
+            long cnt = 0;
+            cnt += cores.length;
+            for (int c : cores) {
+                cnt += m / c;
+            }
+            if (cnt >= n) {//시간 m주면 n개이상가능..
+                t_plus = m;
                 r = m - 1;
             }else {
                 l = m + 1;
             }
         }
-        //배정 다못하는 T - 1에서는 다 배정을안했을거고 T에는 모든 배정이완료
-        //즉 T-1까지 일하고 몇개남는지 안다음에
-        //T에서 직접시뮬레이션
-        int t_minus = t - 1;
-        int done_t_minus = cores.length;
-        for (int c : cores) done_t_minus += (t_minus / c);
-        int left = n - done_t_minus;
+        //우리는 n개 딱 처리할수있는거 원함. 그거 -1시간하면 마무리가능.
+        int t = t_plus - 1;
+        //t일때 몇개가능
+        int cnt = 0;
+        cnt += cores.length;
+        for (int c : cores) cnt += t / c;
+        int left = n - cnt;
+        // System.out.printf("tplus = %d\n", t_plus);
+        // System.out.printf("cnt = %d\n", cnt);
+        // System.out.printf("left = %d\n", left);
         for (int i = 0; i < cores.length; i++) {
-            //c = 2, t = 5... 일중.. 4면일안함
-            if (t % cores[i] != 0) continue;
+            if (t_plus % cores[i] != 0) continue;//일중인코어
             left--;
             if (left == 0) return i + 1;
         }
         return -1;
     }
 }
-/**
-    1  2  3
-0:  1  2  3
-*/
