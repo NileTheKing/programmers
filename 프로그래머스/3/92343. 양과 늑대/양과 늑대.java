@@ -1,44 +1,41 @@
 import java.util.*;
 class Solution {
-    int cnt = 0;
-    List<List<Integer>> map;
+    int max = 0;
+    Map<Integer, List<Integer>> childMap;
     int[] info;
     public int solution(int[] info, int[][] edges) {
-        map = new ArrayList<>();
+        this.childMap = new HashMap<>();
         this.info = info;
-        // 자식 리스트 초기화
-        for (int i = 0; i < info.length; i++) {
-            map.add(new ArrayList<>());
-        }
-        
-        // 단방향으로만 저장
+        for (int i = 0; i < info.length; i++) childMap.put(i, new ArrayList<>());
         for (int[] e : edges) {
-            map.get(e[0]).add(e[1]);
+            childMap.get(e[0]).add(e[1]);
+            //트리..단방향
         }
-        Set<Integer> candidates = new HashSet<>();
-        candidates.addAll(map.get(0));
-        backtrack(candidates, 1, 0);
-        
-        return cnt;
+
+        Set<Integer> toVisit = new HashSet<>();
+        toVisit.addAll(childMap.get(0));
+        backtrack(1,0, toVisit);
+        return max;
     }
-    public void backtrack(Set<Integer> candidates, int sheep, int wolf) {
-        cnt = Math.max(cnt, sheep);
+    void backtrack(int sheep, int wolf, Set<Integer> toVisit) {
+        max = Math.max(sheep, max);//매번갱신
+        //백트래킹..완탐
         
-        for (int next : new ArrayList<>(candidates)) {
-            int newSheep = sheep + (info[next] == 0 ? 1 : 0);
-            int newWolf = wolf + (info[next] == 1 ? 1 : 0);
-            
-            if (newWolf >= newSheep) continue;
-            candidates.remove(next);
-            candidates.addAll(map.get(next));
-            backtrack(candidates, newSheep, newWolf);
-            candidates.add(next);
-            candidates.removeAll(map.get(next));
+        List<Integer> copy = new ArrayList<>(toVisit);
+        for (int next : copy) {//next는 노드번호
+            int nsheep = info[next] == 0 ? sheep + 1 : sheep;
+            int nwolf = wolf + info[next];
+            if (nwolf >= nsheep) continue;
+            //방문
+            toVisit.remove(next);
+            toVisit.addAll(childMap.get(next));
+            backtrack(nsheep, nwolf, toVisit);
+            toVisit.add(next);
+            toVisit.removeAll(childMap.get(next));
         }
+        
     }
 }
 /**
-dfs로 푼다쳐봐 근데 문제조건상 돌아올 수 있어. 
-아니 이게 종료조건이
-
+완탐..매번갱신. 종료조건은 없어서 종료되거나 뭐 명시적으로 활용하거나...
 */
