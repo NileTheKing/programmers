@@ -6,27 +6,18 @@ class Solution {
         int ans = 0;
         while (l <= r) {
             int m = (l + r) / 2;
-            //m라운드까지 갔다치자. 그러면 m라운드 치르고.. sum
-            //그중에 top 3 빼면 성공
-            //성공이란
-            //예를 들어  4 2 4 5 3 3 1에서
-            //답 5라운드까지가면 18인데 k가 3이라 13뺴주면 5임..그러면2가남아서 ㅇㅋ
-            //m까지 자르고 정렬하고 sum구하고 top3
-            // System.out.printf("===== m = %d =====\n", m);
-            int[] cut = Arrays.copyOf(enemy, m);
+            int[] cut = Arrays.copyOf(enemy, m); //enemy[m]은 m+1라운드고 cut은 m-1까지니까 m라운드까지는 계산함
             Arrays.sort(cut);
-            long sum = 0;//m = 5... length 5.. k 3이면 0 1 2 3 4에서 2까지만
-            //length 5 k 3이면 0 1 2까지해야함 그니까
-            for (int i = 0; i < cut.length - k; i++) {
-                // System.out.printf("%d, adding %d\n", i, cut[i]);
-                sum += cut[i];
-            }
-            // System.out.printf("sum = %d\n", sum);
-            //sum이 n이하이면 m라운드가능.
-            if (sum <= n) {
+            int length = cut.length;//길이6이면 인덱스5부터..무적권3이면 5 4 3
+            //반대로 길이6인덱스5가끝일떄 무족권3개있으면 543안할테니 2까지만
+            //2는 length - 1 =>5 에서 k뺀거
+            long sum = 0;
+            for (int i = 0; i <= length - 1 - k; i++) sum += cut[i];
+            
+            if (sum <= n) { //가능
                 ans = m;
                 l = m + 1;
-            }else {
+            }else {//불가능
                 r = m - 1;
             }
         }
