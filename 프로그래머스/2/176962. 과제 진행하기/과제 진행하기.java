@@ -1,81 +1,66 @@
 import java.util.*;
 class Solution {
     public String[] solution(String[][] plans) {
-        int len = plans.length;
-        Task[] tasks = new Task[len];
-        for (int i = 0; i < len; i++) {
-            String[] p = plans[i];
-            String subject = p[0];
-            int time = getTime(p[1]);
-            int duration = Integer.parseInt(p[2]);
-            // System.out.printf("(%s %d %d)\n",subject, time, duration);
-            tasks[i] = new Task(subject, time, duration);
+        ArrayDeque<Task> stack = new ArrayDeque<>();
+        Task[] tasks = new Task[plans.length];
+        for (int i = 0; i < plans.length; i++) {
+            String[] plan = plans[i];
+            String name = plan[0];
+            String time = plan[1];
+            String left = plan[2];
+            Task transformed = new Task(name, timize(time), timize(left));
+            
+            tasks[i] = transformed;
+            
         }
-        Arrays.sort(tasks, (o1, o2) -> {
-            return o1.time - o2.time;
-        });
-        // System.out.println(tasks);
-        int idx = 0;
-        ArrayDeque<Task> stk = new ArrayDeque<>();
+        Arrays.sort(tasks, (o1,o2) -> o1.start - o2.start);
+        //시작순대로 처리하면서, 다음시간오기 전까지 작업. 다하면 스택에서꺼내고, 못한거 다시넣기.
         List<String> ans = new ArrayList<>();
-        while (idx < len - 1) {
-            //맨앞에있는 idx에해당하는 작업 꺼내서 수행하고 시간남으면 작업하기 없으면안하기
-            Task current = tasks[idx];
-            Task next = tasks[idx + 1];
-            //작업하고 시간남으면 처리 없으면안하기인데..
-            //스택에 넣어서 단순화가능?지금 current를넣고... next시간되기전까지 하는거잖어
-            int currentTime = current.time;
-            stk.offerFirst(current);
-            int deadline = next.time;
-            // System.out.printf("index:%d, subject: %s, current time : %d, nextTime: %d\n", idx, current.subject, currentTime, deadline);
-            while (!stk.isEmpty() && currentTime < deadline) {//시간이 안됐으면
-                Task popped = stk.pollFirst(); //뽑아서
-                int timeGap = deadline - currentTime; //얼마나할수있는지게ㅖ산
-                if (timeGap <= 0) break;
-                // System.out.printf("%s left: %d, timeGap: %d\n", popped.subject, popped.duration, timeGap);
-                if (popped.duration <= timeGap) {//다할수있으면
-                    // System.out.printf("%s done\n", popped.subject);
-                    ans.add(popped.subject);//완료
-                    currentTime += popped.duration;//pop은이미했고 시간반영
-                }else { //다못하면 조금이라도 시간줄여서 한다.
-                    currentTime += popped.duration;
-                    popped.duration -= timeGap;
-                    stk.offerFirst(popped);
+        for (int i = 0; i < tasks.length - 1; i++) {
+            // System.out.printf("===== i : %d=====\n", i);
+            //다음작업전에 스택에 있는작업들을 위에서부터 최대한 처리하기.
+            //초기상태를 넣어줘야하나 아님녀 똑같이 들어가도되나.
+            int gotTime = tasks[i+1].start - tasks[i].start;
+            stack.offerFirst(tasks[i]);
+            while(!stack.isEmpty()) {
+                if (gotTime == 0) break; //할거없음
+                Task polled = stack.pollFirst();
+                int tmp = polled.left;
+                // System.out.printf("polled: (%s %d %d)\n", polled.name, polled.start, polled.left);
+                polled.left -= gotTime;
+                // System.out.printf("after substraction: %d\n", polled.left);
+                //근데직관적으로 위에서0방어했으니까 0애서딱 끊어줘야함
+                //예를들어 gottimed이 23이면..23만크
+                if (polled.left > 0) {//남은시간 다썼는데 완료못함..
+                    stack.offerFirst(new Task(polled.name, polled.start, polled.left));
+                    gotTime = 0;
+                }else { //처리 삽가능.. 0미만임.. 10분남은걸 23분이처리? 그러면 10분뺴
+                    //10분남은걸 11분이처리? 1분남고.. 2분남은걸 1분이처리? 못하니까
+                    //위에서 1분만큼 처리한거task로다시넣고 gottime0됨
+                    gotTime -= tmp;
+                    ans.add(polled.name);
                 }
             }
-            idx++;
         }
-        ans.add(tasks[len - 1].subject);
-        while (!stk.isEmpty()) {
-            ans.add(stk.pop().subject);
-        }
+        //마무리
+        ans.add(tasks[tasks.length - 1].name);
+        //stack털기
+        while (!stack.isEmpty()) ans.add(stack.pollFirst().name);
         return ans.toArray(new String[0]);
-        
     }
-    public class Task {
-        String subject;
-        int time;
-        int duration;
-        Task (String subject, int time, int duration) {
-            this.subject = subject;
-            this.time = time;
-            this.duration = duration;
-        }
-    }
-    public int getTime(String str) {
+    int timize(String str) {
         String[] parts = str.split(":");
+        if (parts.length == 1) return Integer.parseInt(parts[0]);
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
+    class Task {
+        String name;
+        int start;
+        int left;
+        Task(String n, int s, int l) {
+            this.name = n;
+            this.start = s;
+            this.left = l;
+        }
+    }
 }
-/**
-과제가있다..[이름 시작시간 소요시간]
-
-과제를 한다. 시작하기로 한 시간이 되면 바로.
-다음과제까지 시간남으면 멈춰둔 과제를 이어서한다. 마지막에 멈춘 것부터.
-
-1.정렬필요
-2. 스택필요
-
-1.정렬된거로부터 idx로 추적
-2. 해가면서 시간남으면 작업하고 스택넣고. 스택뺴고.
-*/
