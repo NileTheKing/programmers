@@ -1,47 +1,39 @@
-import java.util.*;
 class Solution {
+    int min = Integer.MAX_VALUE;
     int[][] cost;
     int[][] hint;
     int n;
-    int[] hintInfo;
-    long min = Long.MAX_VALUE;
     public int solution(int[][] cost, int[][] hint) {
         this.cost = cost;
         this.hint = hint;
-        n = cost.length;
-        hintInfo = new int[n+1];
-        
-        backtrack(0, 0);
-        return (int)min;
+        this.n = cost.length;
+        backtrack(0, 0, 1);
+        return min;
     }
-    public void backtrack(int idx, long currentPrice) {
-        if (idx == n) { //끝날조건
-            min = Math.min(currentPrice, min);
+    void backtrack(int hintMasking, int spent, int stageNo) {
+        //힌트 최대한사용 n장까지
+        // System.out.printf("stageNo:%d, spent:%d\n", stageNo,spent);
+        int numHintsThisStage = 0;
+        //hintMasking을 순회하면서.. hintMasking비트켜졌으면 갯수세
+        //TODO..이거 직접해야함?아 예전엔 따로 전역변수로 관리했음..
+        for (int i = 0; i < n; i++) {
+            if ((hintMasking & (1 << i)) == 0) continue;
+            for (int j = 0; j < hint[i].length; j++)
+                if (hint[i][j] == stageNo) numHintsThisStage++;
+        }
+        int toBeUsed = Math.min(numHintsThisStage, n - 1);
+        spent += cost[stageNo-1][toBeUsed];
+        if (stageNo == n) {
+            min = Math.min(min, spent);
             return;
         }
+        // System.out.printf("this round: %d\n", cost[stageNo-1][toBeUsed]);
+        //안산다
+        backtrack(hintMasking, spent, stageNo + 1);
+        //산다
+        spent += hint[stageNo-1][0];
+        hintMasking |= (1 << (stageNo - 1));
+        backtrack(hintMasking, spent, stageNo + 1);
         
-        //이번에 힌트 몇개 쓸거?
-        int ableHints = Math.min(n-1,hintInfo[idx]);
-        //이번에 힌트 사용한다면 드는 금액
-        int priceToSolve = cost[idx][ableHints];
-        
-        if (idx == n - 1) { //마지막 스테이지면 안삼
-            backtrack(idx + 1, currentPrice + priceToSolve);
-        }else {
-            
-            //안슴
-            backtrack(idx + 1, currentPrice + priceToSolve);
-            //힌트번들 삼
-            for (int i = 1; i < hint[idx].length; i++) {
-                int targetIdx = hint[idx][i] - 1;
-                hintInfo[targetIdx]++;
-            }
-            backtrack(idx + 1, currentPrice + priceToSolve + hint[idx][0]);
-            //백트래킹
-            for (int i = 1; i < hint[idx].length; i++) {
-                int targetIdx = hint[idx][i] - 1;
-                hintInfo[targetIdx]--;
-            }
-        }
     }
 }
