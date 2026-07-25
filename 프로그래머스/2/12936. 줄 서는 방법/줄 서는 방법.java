@@ -3,22 +3,22 @@ class Solution {
     public int[] solution(int n, long k) {
         long[] factorial = new long[n + 1];
         factorial[0] = 1;
-        for (int i = 1; i <= n; i++) factorial[i] = factorial[i - 1] * i;
         List<Integer> bucket = new ArrayList<>();
-        for (int i = 0; i < n; i++) bucket.add(i + 1);//<<이거도맞는지모름
-        //1 2 3 4 5
-        //0 1 2 3 4
-        // for (int b : bucket) System.out.printf("%d ", b);
-        int[] ans = new int[n];
-        k--; //0index..몫과나머지 컴퓨터용
-        //몫은 어느바구니 나머지는 바구니 내 위치
         for (int i = 1; i <= n; i++) {
-            //첫번째자리수
-            long fact = factorial[n - i]; //뒤에나올애들
+            factorial[i] = factorial[i - 1] * i;
+            bucket.add(i);
+        }
+        //bucket: [1,2,3,4,5....n] 0inxed
+        //몫과나머지, 자리 위치 구하니까 0indexed
+        k--;
+        int[] ans = new int[n];
+        for (int i = 0; i < n; i++) {//n자리구해야함
+            long fact = factorial[n - 1 - i];//인덱스발사대
             int idx = (int) (k / fact);
-            ans[i-1] = bucket.get(idx);
+            // k는필요한 순서고 실제 바구니번호는 묶임때문에 나눠 즉 1 2 3 4 5 6순서가 12->1 34->2 56->3으로 배정
+            ans[i] = bucket.get(idx);
             bucket.remove(idx);
-            k = k % fact;//다음 바구니는..현재바구니내위치가
+            k %= fact; //이제 필요한순서는..바구니 내 위치니까 fact하고 난 나머지
         }
         return ans;
     }
