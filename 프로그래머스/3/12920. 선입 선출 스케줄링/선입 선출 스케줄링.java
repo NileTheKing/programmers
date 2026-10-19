@@ -1,38 +1,57 @@
+import java.util.*;
 class Solution {
     public int solution(int n, int[] cores) {
-        if (n <= cores.length) return n;
+        if (cores.length >= n) return n;
+        int t = 0;
         int l = 0;
-        int r = 50000 * 10000 / 2;
-        int t_plus = r;
+        int r = 10000 / 2 * 50000 * 2;
+        // System.out.printf("===parametric===\n");
         while (l <= r) {
-            int m = (l + r) / 2;
-            long cnt = 0;
-            cnt += cores.length;
+            int m = l + (r - l) / 2;
+            // System.out.printf("===m=%d===\n",m);
+            long jobsDone = cores.length;
             for (int c : cores) {
-                cnt += m / c;
+                jobsDone += (m / c);
             }
-            if (cnt >= n) {//시간 m주면 n개이상가능..
-                t_plus = m;
+            // System.out.printf("m:%d, jobsDone:%d\n", m, jobsDone);
+            //n - jobsDone -> 남은일갯수
+            if (jobsDone >= n) { //처리한일이 너무많음
                 r = m - 1;
-            }else {
-                l = m + 1;
+                t = m;
+            }else {//시간이부족해서 처리못했음
+                l = m  + 1;
             }
         }
-        //우리는 n개 딱 처리할수있는거 원함. 그거 -1시간하면 마무리가능.
-        int t = t_plus - 1;
-        //t일때 몇개가능
-        int cnt = 0;
-        cnt += cores.length;
-        for (int c : cores) cnt += t / c;
-        int left = n - cnt;
-        // System.out.printf("tplus = %d\n", t_plus);
-        // System.out.printf("cnt = %d\n", cnt);
-        // System.out.printf("left = %d\n", left);
+        
+        long done = cores.length;
+        for (int c : cores) done += ((t - 1) / c);
+        long left = n - done;
+        // System.out.printf("===DEBUG===\n");
+        // System.out.printf("t-1:%d, left:%d\n", t-1, left);
         for (int i = 0; i < cores.length; i++) {
-            if (t_plus % cores[i] != 0) continue;//일중인코어
+            //현재 코어가 일중이면 패스
+            if ( t % cores[i] != 0) {
+                // System.out.printf("core%d working..at %d,pass\n", i+1, t-1);
+                continue;
+            }
+            if (left == 1) return i + 1;
             left--;
-            if (left == 0) return i + 1;
         }
         return -1;
     }
 }
+/**
+시뮬레이션한다면? 
+작업 50,000 / 코어 2개 * 10000 = 2억5천초 소요
+2억5천초 * 코어2개 => 5억번연산 TLE
+
+n=6 cores:{1,2,3}
+
+t=0 1 2 3
+t=1 4
+t=2 5 6
+t=3
+
+고로 구하는 t는 2여야하고..
+t-1에서 다된거 구하고 t에서 수행임
+*/
