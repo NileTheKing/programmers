@@ -1,34 +1,39 @@
 import java.util.*;
 class Solution {
+    private int[] parent;
     public int solution(int n, int[][] costs) {
-        List<List<int[]>> graph = new ArrayList<>();
-        for (int i = 0; i < n; i++) graph.add(new ArrayList<>());
+        int ans = 0;
+        parent = new int[n];
+        for (int i = 0; i < n; i++) parent[i] = i;
+        Arrays.sort(costs, (o1, o2) -> o1[2] - o2[2]); //간선 오름차순
+        
+        //싼 간선 costs순회하면서 greedy하게 합치면됨
         for (int[] c : costs) {
             int v1 = c[0];
             int v2 = c[1];
-            int price = c[2];
+            int expense = c[2];//간선가격
             
-            graph.get(v1).add(new int[] {v2, price});
-            graph.get(v2).add(new int[] {v1, price});
-        }
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[1] - b[1]);
-        boolean[] visited = new boolean[n];
-        pq.offer(new int[] {0,0});
-        int ans = 0;
-        int cnt = 0;
-        while (!pq.isEmpty()) {
-            if (cnt == n) return ans;
+            int p1 = find(v1);
+            int p2 = find(v2);
             
-            int[] polled = pq.poll();
-            if (visited[polled[0]]) continue;
-            visited[polled[0]] = true;
-            ans += polled[1];
-            cnt++;
-            
-            for (int[] nei : graph.get(polled[0])) {
-                pq.offer(new int[] {nei[0], nei[1]});
-            }
+            if (p1 == p2) continue;
+            union(p1, p2);
+            ans += expense;
         }
         return ans;
+        
+    }
+    public int find(int n) {//노드찾기
+        if (parent[n] == n) return n;
+        else return parent[n] = find(parent[n]); //경로압축
+    }
+    public void union(int n1, int n2) {//n1을 n2에 합치기
+        
+        int p1 = find(n1);
+        int p2 = find(n2);
+        
+        if (p1 != p2){
+            parent[p1] = p2;
+        }
     }
 }
