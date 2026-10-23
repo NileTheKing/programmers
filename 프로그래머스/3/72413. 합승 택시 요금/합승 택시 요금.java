@@ -1,47 +1,55 @@
 import java.util.*;
 class Solution {
     public int solution(int n, int s, int a, int b, int[][] fares) {
-        int[][] dist = new int[n+1][n+1];
-        for (int i = 1; i <= n; i++) {
-            Arrays.fill(dist[i], Integer.MAX_VALUE);
-            dist[i][i] = 0;
-        }
-        List<List<int[]>> graph = new ArrayList<>();
-        for (int i = 0; i <= n; i++) graph.add(new ArrayList<>());
+        //모든 노드를 시작으로, 모든그래프의 최단거리를 계산
+        
+            //초기작업
+        List<List<int[]>> info = new ArrayList<>();
+        for (int i = 0; i <= n; i++) info.add(new ArrayList<>());
         for (int[] f : fares) {
             int v1 = f[0];
             int v2 = f[1];
-            int price = f[2];
+            int cost = f[2];
             
-            graph.get(v1).add(new int[] {v2, price});
-            graph.get(v2).add(new int[] {v1, price});
+            info.get(v1).add(new int[] {v2, cost});
+            info.get(v2).add(new int[] {v1, cost});
         }
-        //between all points dijkstra
+        //dijkstra초기작업
+        int INF = 100_000_000;
+        int[][] dist = new int[n + 1][n + 1];
         for (int i = 1; i <= n; i++) {
-            // System.out.printf("====%d dijkstra====\n", i);
-            PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]);
+            Arrays.fill(dist[i], INF);
+            dist[i][i] = 0;
+        }
+        
+        //모든 다익스트라완성
+        for (int i = 1; i <= n; i++) {
+            //i로부터 출발
+            PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]); // {간선, 가격};
             pq.offer(new int[] {i, 0});
             while (!pq.isEmpty()) {
                 int[] polled = pq.poll();
-                int v = polled[0];
-                int price = polled[1];
-                if (dist[i][v] < price) continue;
-                // System.out.printf("polled:(%d,%d)\n",v,price);
-                for (int[] nei : graph.get(v)) {
-                    // System.out.printf("%d %d\n",nei[0],nei[1]);
-                    if (price + nei[1] >= dist[i][nei[0]]) continue;
-                    dist[i][nei[0]] = price + nei[1];
-                    pq.offer(new int[] {nei[0], dist[i][nei[0]]});
+                int at = polled[0];
+                if (dist[i][at] < polled[1]) continue;
+                for (int[] nei : info.get(at)) {
+                    int nextNode = nei[0];
+                    int nextCost = nei[1];
+                    
+                    if (dist[i][nextNode] <= dist[i][at] + nextCost) continue;
+                    dist[i][nextNode] = dist[i][at] + nextCost;
+                    pq.offer(new int[] {nextNode, dist[i][nextNode]});
                 }
             }
         }
-        // for (int i = 1; i <= n; i++) System.out.println(Arrays.toString(dist[i]));
-        //start -> certain point -> destination
-        int ans = Integer.MAX_VALUE;
-        for (int i = 1; i <= n; i++) {
-            // System.out.printf("%d / 2 + %d + %d\n", dist[s][i], dist[i][a],dist[i][b]);
-            ans = Math.min(ans, dist[s][i] + dist[i][a] + dist[i][b]);
+        
+        //모든 지점을 시도하여 싼 것 구하기
+        int min = INF;
+        //s부터 i경유
+        for (int i = 1; i<= n; i++) {
+            int total = dist[s][i] + dist[i][a] + dist[i][b];
+            min = total < 0 ? min : Math.min(total, min);
+            // System.out.printf("%d경유시 %d+%d+%d = %d\n", i, dist[s][i], dist[i][a], dist[i][b], total);
         }
-        return ans;
+        return min;
     }
 }
