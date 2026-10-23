@@ -6,32 +6,29 @@ class Solution {
     public int solution(int[] info, int[][] edges) {
         this.info = info;
         tree = new ArrayList<>();
-        for (int i = 0; i < info.length; i++) tree.add(new ArrayList<>());
+        for (int i = 0; i < info.length; i++) {
+            tree.add(new ArrayList<>());
+        }
         for (int[] e : edges) {
-            int v1 = e[0];
-            int v2 = e[1];
-            
+            int v1 = e[0]; //부모
+            int v2 = e[1]; //자식
             tree.get(v1).add(v2);
         }
-        
-        backtrack(0, 1, 0, new HashSet<>());
+        backtrack(0, 0, 1, new HashSet<>());
         return max;
     }
-    void backtrack(int current, int sheep, int wolf, Set<Integer> toVisit) {
-        //셀프추ㅏㄱ
+    void backtrack(int current,int wolf, int sheep, Set<Integer> toVisit) {
         max = Math.max(sheep, max);
         toVisit.addAll(tree.get(current));
-        
-        //순회
-        for (int nei : new HashSet<>(toVisit)) {
-            int nwolf = wolf + info[nei];
-            int nsheep = sheep + (info[nei] == 0 ? 1 : 0);
+        for (int next : new ArrayList<>(toVisit)) {
+            int nextInfo = info[next];
+            int nsheep = sheep + (nextInfo == 0 ? 1 : 0);
+            int nwolf = wolf + nextInfo;
             
-            if (nsheep <= nwolf) continue;
-            
-            toVisit.remove(nei);
-            backtrack(nei, nsheep, nwolf, toVisit);
-            toVisit.add(nei);
+            if (nsheep <= nwolf) continue; //지금안되니패스
+            toVisit.remove(next);
+            backtrack(next, nwolf, nsheep, toVisit);
+            toVisit.add(next);
         }
         toVisit.removeAll(tree.get(current));
     }
