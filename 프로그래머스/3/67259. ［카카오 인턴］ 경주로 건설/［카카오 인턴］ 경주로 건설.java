@@ -1,50 +1,68 @@
 import java.util.*;
 class Solution {
-    int[][] directions = {{-1,0},{1,0},{0,1},{0,-1}};
+    int[][] directions = {{1,0}, {-1,0}, {0, 1}, {0, -1}};
     public int solution(int[][] board) {
         int m = board.length;
         int n = board[0].length;
-        PriorityQueue<Info> pq = new PriorityQueue<>((o1,o2) -> o1.cost - o2.cost);
-        boolean[][][] visited = new boolean[m][n][2]; //0수평, 1수직
-        pq.offer(new Info(0,0,0,0));
-        pq.offer(new Info(0,0,0,1));
-        while (!pq.isEmpty()) {
-            Info polled = pq.poll();
-            if (visited[polled.r][polled.c][polled.prevDir]) continue;
-            visited[polled.r][polled.c][polled.prevDir] = true;
-            if (polled.r == m - 1 && polled.c == n - 1) return polled.cost;//종료검사는 여기서
-            // System.out.printf("(%d,%d) %d %d\n", polled.r, polled.c, polled.cost, polled.prevDir);
-            for (int[] d : directions) {
-                int nr = d[0] + polled.r;
-                int nc = d[1] + polled.c;
-                
-                // System.out.printf("%d %d\n", nr, nc);
-                //bound
-                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
-                //valid
-                if (board[nr][nc] == 1) continue;
-                boolean goingHor = d[0] != 0 ? true : false;
-                boolean prevHor = polled.prevDir == 0 ? true : false;
-                //TT->straight 11
-                //TF -> corner 10
-                //FT -> corner 01
-                //FF -> straight 00
-                int deltaPrice = goingHor == prevHor ? 100 : 600;
-                pq.offer(new Info(nr,nc,polled.cost + deltaPrice, goingHor ? 0 : 1));
+        
+        Queue<State> q = new LinkedList<>();
+        int[][][] visited = new int[m][n][2];//2는 아무상태?ㅁㄹ
+        int INF = 1_000_000_000;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                visited[i][j][0] = INF;
+                visited[i][j][1] = INF;
             }
         }
-        return -1;
+        visited[0][0][0] = 0;
+        visited[0][0][1] = 0;
+        q.offer(new State(0, 0, 0, 0));
+        q.offer(new State(0, 0, 0, 1));
+        
+        int min = INF;
+        while (!q.isEmpty()) {
+            State polled = q.poll();
+            int r = polled.r;
+            int c = polled.c;
+            int cost = polled.sumCost;
+            int prevVertical = polled.prevVertical;
+            for (int[] d : directions) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                int currentVertical = d[0] == 0 ? 0 : 1;//방금수직으로움직였는지
+                //두개 똑같으면 직진중
+                boolean straight = prevVertical == currentVertical ? true : false;
+                int delta = straight ? 100 : 600;
+                int nCost = cost + delta;
+                
+                //검증
+                    //bound
+                    //wall
+                    //visited
+                    //end면갱신
+                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+                if (board[nr][nc] == 1) continue;
+                if (visited[nr][nc][currentVertical] <= nCost) continue;
+                if (nr == m - 1 && nc == n - 1) {
+                    min = Math.min(min, nCost);
+                }
+                
+                visited[nr][nc][currentVertical] = nCost;
+                q.offer(new State(nCost, nr, nc, currentVertical));
+            }
+        }
+        return min;
     }
-    class Info {
+    public class State {
+        int sumCost;
         int r;
         int c;
-        int cost;
-        int prevDir;
-        Info  (int r, int c, int cost, int prevDir) {
+        int prevVertical; //1 yes 0 no
+        State(int sumCost, int r, int c, int prevVertical) {
+            this.sumCost = sumCost;
             this.r = r;
             this.c = c;
-            this.cost = cost;
-            this.prevDir = prevDir;
+            this.prevVertical = prevVertical;
         }
     }
 }
