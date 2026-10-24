@@ -1,10 +1,10 @@
 # [level 3] 미로 탈출 명령어 - 150365 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/150365?gad_source=1&gad_campaignid=23776046558&gbraid=0AAAAAC_c4nBo3G_Xwm7n2mFAINvxm07Gc&gclid=Cj0KCQjw94bTBhDQARIsAN3vv0zE6hGeMSxxfYEw2awjj4_1540E6z8nJBamTEhnTQmlrRjt13_n6mQaAllAEALw_wcB) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/150365) 
 
 ### 성능 요약
 
-메모리: 84.6 MB, 시간: 4.92 ms
+메모리: 93.6 MB, 시간: 59.04 ms
 
 ### 구분
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2026년 07월 24일 14:14:04
+2026년 10월 24일 18:05:22
 
 ### 문제 설명
 
